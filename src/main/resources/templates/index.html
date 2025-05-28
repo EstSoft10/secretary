@@ -1,10 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>A:ssistant</title>
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link rel="stylesheet" th:href="@{/css/index.css}"/>
+    <script src="/js/index.js"></script>
 </head>
 <body>
-test
+<main class="main-container">
+    <div th:replace="layout/header :: header"></div>
+    <div class="content-wrapper">
+        <section class="search-box">
+            <form class="search-form" th:action="@{/searchResult}" method="get">
+                <input type="text" name="query" placeholder="앨런에게 물어보세요!" required/>
+                <button type="submit">검색</button>
+            </form>
+        </section>
+        <section class="card-section">
+            <div class="card-row">
+                <div class="card wide-card youtube-card">
+                    <p>🎬 유튜브 영상 요약해줘</p>
+                    <form th:action="@{/searchResult}" method="get" class="youtube-form">
+                        <input type="text" name="query" placeholder="유튜브 링크를 붙여넣어 주세요" required/>
+                        <button type="submit">요약</button>
+                    </form>
+                </div>
+                <div class="card small-card" id="weather-card">
+                    <div id="weather-location" class="weather-location"></div>
+                    <div id="weather-time" class="weather-time"></div>
+                    <div class="weather-info">
+                        <img id="weather-icon"/>
+                        <span id="weather-text"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-row">
+                <div class="card small-card" onclick="location.href='/searchResult?query=오늘 저녁 뭐 먹지?';">
+                    <p>🍱 오늘 저녁 뭐 먹지?</p>
+                </div>
+                <div class="card small-card" onclick="location.href='/searchResult?query=반려동물 사료 시장 분석';">
+                    <p>🐶 반려동물 사료 시장</p>
+                </div>
+                <div class="card small-card" onclick="location.href='/searchResult?query=가성비 좋은 무선 이어폰 추천해줘';">
+                    <p>🎧 무선 이어폰 추천</p>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+<div th:replace="layout/footer :: footer"></div>
 </body>
 </html>

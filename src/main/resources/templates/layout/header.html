@@ -1,0 +1,15 @@
+<header class="header" th:fragment="header">
+    <div class="logo">
+        <a th:href="@{/}">A:ssistant</a>
+    </div>
+    <div class="hamburger" id="hamburger" onclick="toggleMenu(true)">
+        &#9776;
+    </div>
+    <nav id="sideMenu" class="side-menu">
+        <div class="close-btn" onclick="toggleMenu(false)">✕</div>
+        <ul class="side-menu-list">
+            <li><a th:href="@{/calendar}"><img src="/images/calendar.png" alt="X" class="menu-icon"></a></li>
+            <li><a th:href="@{/memo}"><img src="/images/memo.png" alt="X" class="menu-icon"></a></li>
+        </ul>
+    </nav>
+</header>
