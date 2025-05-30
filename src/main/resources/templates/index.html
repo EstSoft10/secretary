@@ -22,11 +22,14 @@
             <div class="card-row">
                 <div class="card wide-card youtube-card">
                     <p>🎬 유튜브 영상 요약해줘</p>
-                    <form th:action="@{/searchResult}" method="get" class="youtube-form">
-                        <input type="text" name="query" placeholder="유튜브 링크를 붙여넣어 주세요" required/>
+                    <form id="youtubeForm" class="youtube-form">
+                        <input type="text" id="youtubeInput" name="query" placeholder="유튜브 링크를 붙여넣어 주세요" required/>
                         <button type="submit">요약</button>
                     </form>
+
+                    <div id="result" style="margin-top: 1rem; white-space: pre-wrap; color: #333;"></div>
                 </div>
+
                 <div class="card small-card" id="weather-card">
                     <div id="weather-location" class="weather-location"></div>
                     <div id="weather-time" class="weather-time"></div>
