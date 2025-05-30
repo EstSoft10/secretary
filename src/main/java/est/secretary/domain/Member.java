@@ -1,4 +1,4 @@
-package est.secretary.member;
+package est.secretary.domain;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

@@ -1,4 +1,4 @@
-package est.secretary.calendar.dto;
+package est.secretary.dto;
 
 import java.time.LocalDateTime;
 
