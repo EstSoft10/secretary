@@ -1,8 +1,8 @@
-package est.secretary.calendar.dto;
+package est.secretary.dto;
 
 import java.time.LocalDateTime;
 
-import est.secretary.calendar.domain.Schedule;
+import est.secretary.domain.Schedule;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

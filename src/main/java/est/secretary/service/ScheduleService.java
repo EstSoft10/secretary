@@ -1,4 +1,4 @@
-package est.secretary.calendar.service;
+package est.secretary.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -7,12 +7,12 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import est.secretary.calendar.domain.Schedule;
-import est.secretary.calendar.dto.ScheduleRequest;
-import est.secretary.calendar.dto.ScheduleResponse;
-import est.secretary.calendar.repository.ScheduleRepository;
-import est.secretary.member.Member;
-import est.secretary.member.MemberRepository;
+import est.secretary.domain.Schedule;
+import est.secretary.dto.ScheduleRequest;
+import est.secretary.dto.ScheduleResponse;
+import est.secretary.repository.ScheduleRepository;
+import est.secretary.domain.Member;
+import est.secretary.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor

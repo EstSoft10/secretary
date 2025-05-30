@@ -1,8 +1,7 @@
-package est.secretary.calendar.domain;
+package est.secretary.domain;
 
 import java.time.LocalDateTime;
 
-import est.secretary.member.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

@@ -1,4 +1,4 @@
-package est.secretary.calendar.controller;
+package est.secretary.controller;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import est.secretary.calendar.dto.ScheduleRequest;
-import est.secretary.calendar.dto.ScheduleResponse;
-import est.secretary.calendar.service.ScheduleService;
+import est.secretary.dto.ScheduleRequest;
+import est.secretary.dto.ScheduleResponse;
+import est.secretary.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
