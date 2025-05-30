@@ -10,5 +10,5 @@ import est.secretary.calendar.domain.Schedule;
 
 @Repository
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
-	List<Schedule> findByBetween(LocalDateTime start, LocalDateTime end);
+	List<Schedule> findByStartBetween(LocalDateTime start, LocalDateTime end);
 }

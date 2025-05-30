@@ -74,7 +74,7 @@ public class ScheduleService {
 
 	// 날짜 범위 조회
 	public List<ScheduleResponse> getSchedulesBetween(LocalDateTime start, LocalDateTime end) {
-		return scheduleRepository.findByBetween(start, end).stream()
+		return scheduleRepository.findByStartBetween(start, end).stream()
 			.map(ScheduleResponse::new)
 			.toList();
 	}
