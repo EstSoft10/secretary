@@ -29,7 +29,6 @@ public class WeatherController {
 		String url = String.format(
 			"https://api.openweathermap.org/data/2.5/weather?lat=%f&lon=%f&appid=%s&units=metric&lang=kr",
 			lat, lon, apiKey);
-		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
 		Map body = response.getBody();
 		String locationUrl = String.format(
