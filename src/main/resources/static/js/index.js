@@ -60,16 +60,14 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("youtubeForm").addEventListener("submit", async function (e) {
         e.preventDefault();
         const youtubeUrl = document.getElementById("youtubeInput").value;
-
+        document.getElementById("loadingOverlay").style.display = "block";
         try {
             const response = await fetch("/youtube/extract-and-summary", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({url: youtubeUrl})
             });
-
             const data = await response.json();
-
             const {summary, subtitle} = data;
             sessionStorage.setItem("youtubeSummaryResult", JSON.stringify({
                 summary,
@@ -77,12 +75,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 videoUrl: youtubeUrl
             }));
             window.location.href = "/youtube-summary";
-
-
         } catch (err) {
-            console.error("요약 중 오류 발생", err);
             alert("요약 중 오류 발생");
+            console.error(err);
+            document.getElementById("loadingOverlay").style.display = "none";
         }
     });
 });
+
 
