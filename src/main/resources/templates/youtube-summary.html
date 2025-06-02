@@ -3,88 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <title>YouTube 요약 결과</title>
-    <style>
-        .container {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .left, .right {
-            flex: 1;
-        }
-
-        .summary-block {
-            margin-bottom: 1rem;
-            padding: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-        }
-
-        .timestamp {
-            font-weight: bold;
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link rel="stylesheet" th:href="@{/css/index.css}"/>
+    <link rel="stylesheet" th:href="@{/css/youtube-summary.css}">
 </head>
 <body>
-<div class="container">
-    <div class="left">
-        <iframe id="videoFrame" width="100%" height="315" frameborder="0" allowfullscreen></iframe>
-        <h2>전체 요약</h2>
-        <ul id="totalSummary"></ul>
+<main class="main-container">
+    <div th:replace="layout/header :: header"></div>
+    <div class="content-container">
+        <div class="left">
+            <iframe id="videoFrame" width="650px" height="400px" frameborder="0" allowfullscreen
+                    allow="autoplay; encrypted-media"></iframe>
+            <p class="summary-title">전체 요약</p>
+            <ul id="totalSummary" class="totalSummary"></ul>
+        </div>
+        <div class="right">
+            <div class="tab-buttons">
+                <button onclick="toggleTab('summary')">요약</button>
+                <button onclick="toggleTab('script')">스크립트</button>
+            </div>
+            <div id="summaryTab"></div>
+            <div id="scriptTab" style="display:none;"></div>
+        </div>
     </div>
-
-    <div class="right" id="chapterSummaries">
-    </div>
-</div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const result = JSON.parse(sessionStorage.getItem("youtubeSummaryResult"));
-        if (!result) return;
-
-        const {summary, subtitle, videoUrl} = result;
-        const parsedSummary = JSON.parse(summary);
-
-        const videoId = new URL(videoUrl).searchParams.get("v");
-        document.getElementById("videoFrame").src = `https://www.youtube.com/embed/${videoId}`;
-
-        const totalSummaryEl = document.getElementById("totalSummary");
-        parsedSummary.summary.total_summary.forEach(line => {
-            const li = document.createElement("li");
-            li.textContent = line;
-            totalSummaryEl.appendChild(li);
-        });
-
-        const chapterContainer = document.getElementById("chapterSummaries");
-        parsedSummary.summary.chapters.forEach((chapter, index) => {
-            const block = document.createElement("div");
-            block.className = "summary-block";
-
-            const title = document.createElement("div");
-            title.className = "timestamp";
-            title.textContent = `${chapter.timestamp} - ${chapter.title}`;
-            block.appendChild(title);
-
-            const ul = document.createElement("ul");
-            chapter.summary.forEach(line => {
-                const li = document.createElement("li");
-                li.textContent = line;
-                ul.appendChild(li);
-            });
-            block.appendChild(ul);
-
-            const btn = document.createElement("button");
-            btn.textContent = "자막 보기";
-            btn.onclick = () => {
-                const sub = subtitle[index]?.text || [];
-                const subText = sub.map(line => `[${line.timestamp}] ${line.content}`).join('\n');
-                alert(subText);
-            };
-            block.appendChild(btn);
-
-            chapterContainer.appendChild(block);
-        });
-    });
-</script>
+</main>
+<div th:replace="layout/footer :: footer"></div>
+<script src="/js/youtube-summary.js"></script>
 </body>
 </html>
