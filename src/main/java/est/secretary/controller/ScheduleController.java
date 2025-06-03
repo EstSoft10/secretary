@@ -7,7 +7,6 @@ import java.util.List;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,14 +15,17 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
+import est.secretary.dto.ScheduleCountResponse;
 import est.secretary.dto.ScheduleRequest;
 import est.secretary.dto.ScheduleResponse;
 import est.secretary.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-@Controller
+@RestController
 @RequestMapping("/api/schedules")
 public class ScheduleController {
 
@@ -65,4 +67,13 @@ public class ScheduleController {
 		scheduleService.deleteSchedule(id);
 		return ResponseEntity.noContent().build();
 	}
+
+	// 날짜별 일정 개수 조회
+	@GetMapping("/api/counts")
+	public List<ScheduleCountResponse> getScheduleCountsByMonth(
+		@RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+		@RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
+		return scheduleService.getScheduleCountsByDay(start.toLocalDate(), end.toLocalDate());
+	}
+
 }

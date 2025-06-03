@@ -25,9 +25,9 @@ public class Schedule {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long scheduleId;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "member_id", nullable = false, updatable = false)
-	private Member member;
+	// @ManyToOne(fetch = FetchType.LAZY)
+	// @JoinColumn(name = "member_id", nullable = false, updatable = false)
+	// private Member member;
 
 	@Column(nullable = false)
 	private String title;
@@ -42,9 +42,8 @@ public class Schedule {
 	private String location;
 
 	@Builder
-	public Schedule(Member member, String title, String content, LocalDateTime start, LocalDateTime end,
+	public Schedule(String title, String content, LocalDateTime start, LocalDateTime end,
 		String location) {
-		this.member = member;
 		this.title = title;
 		this.content = content;
 		this.start = start;
@@ -52,9 +51,8 @@ public class Schedule {
 		this.location = location;
 	}
 
-	public void update(Member member, String title, String content,
+	public void update(String title, String content,
 		LocalDateTime start, LocalDateTime end, String location) {
-		this.member = member;
 		this.title = title;
 		this.content = content;
 		this.start = start;
