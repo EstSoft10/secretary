@@ -4,15 +4,17 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import est.secretary.domain.Schedule;
+import est.secretary.dto.ScheduleCountResponse;
 import est.secretary.dto.ScheduleRequest;
 import est.secretary.dto.ScheduleResponse;
-import est.secretary.repository.ScheduleRepository;
-import est.secretary.domain.Member;
 import est.secretary.repository.MemberRepository;
+import est.secretary.repository.ScheduleRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -36,11 +38,7 @@ public class ScheduleService {
 	}
 
 	public void saveSchedule(ScheduleRequest request) {
-		Member member = memberRepository.findById(request.getMemberId())
-			.orElseThrow(() -> new RuntimeException("Member not found"));
-
 		Schedule schedule = Schedule.builder()
-			.member(member)
 			.title(request.getTitle())
 			.content(request.getContent())
 			.start(request.getStart())
@@ -51,15 +49,12 @@ public class ScheduleService {
 		scheduleRepository.save(schedule);
 	}
 
+	@Transactional
 	public void updateSchedule(Long id, ScheduleRequest request) {
 		Schedule schedule = scheduleRepository.findById(id)
 			.orElseThrow(() -> new RuntimeException("Schedule not found"));
 
-		Member member = memberRepository.findById(request.getMemberId())
-			.orElseThrow(() -> new RuntimeException("Member not found"));
-
 		schedule.update(
-			member,
 			request.getTitle(),
 			request.getContent(),
 			request.getStart(),
@@ -84,5 +79,20 @@ public class ScheduleService {
 		LocalDateTime start = date.atStartOfDay();
 		LocalDateTime end = date.atTime(LocalTime.MAX);
 		return getSchedulesBetween(start, end);
+	}
+
+	// 날짜별 일정
+	public List<ScheduleCountResponse> getScheduleCountsByDay(LocalDate start, LocalDate end) {
+		List<LocalDate> dates = start.datesUntil(end.plusDays(1)).collect(Collectors.toList());
+
+		return dates.stream()
+			.map(date -> {
+				LocalDateTime dayStart = date.atStartOfDay();
+				LocalDateTime dayEnd = date.atTime(LocalTime.MAX);
+				int cnt = scheduleRepository.countByDateRange(dayStart, dayEnd);
+				return new ScheduleCountResponse(date, cnt);
+			})
+			.filter(resp -> resp.getCount() > 0)
+			.collect(Collectors.toList());
 	}
 }
