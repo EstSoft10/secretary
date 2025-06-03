@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ScheduleRequest {
-	private Long memberId;
 	private String title;
 	private String content;
 	private LocalDateTime start;
