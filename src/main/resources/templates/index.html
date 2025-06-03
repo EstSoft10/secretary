@@ -13,7 +13,7 @@
     <div th:replace="layout/header :: header"></div>
     <div class="content-wrapper">
         <section class="search-box">
-            <form class="search-form" th:action="@{/searchResult}" method="get">
+            <form class="search-form" th:action="@{/api/search}" method="get">
                 <input type="text" name="query" placeholder="앨런에게 물어보세요!" required/>
                 <button type="submit">검색</button>
             </form>
