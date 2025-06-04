@@ -1,0 +1,152 @@
+body {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.container {
+    display: flex;
+    gap: 20px;
+    padding-top: 50px;
+}
+
+#calendar {
+    width: 800px;
+    height: 600px;
+}
+
+#day-panel {
+    width: 300px;
+    border: 1px solid #ccc;
+    padding: 10px;
+}
+
+.home-link {
+    font-weight: bold;
+    font-size: 20px;
+    color: #333;
+    text-decoration: none;
+    margin-right: 80px;
+}
+
+#home-button-container {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: auto;
+    width: 100%;
+    padding: 10px 20px;
+    z-index: 1000;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+#schedule-list li {
+    margin-bottom: 10px;
+}
+
+button {
+    padding: 5px 10px;
+    margin-top: 10px;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(137, 137, 137, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal:not(.hidden) {
+    display: flex;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    width: 500px;
+    height: 500px;
+    overflow-y: auto;
+    z-index: 1001;
+}
+
+#schedule-modal .modal-content textarea[name="content"] {
+    height: 150px;
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    resize: vertical;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.close {
+    float: right;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+#open-modal {
+    background-color: #007bff;
+    color: white;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#schedule-list {
+    list-style-type: none;
+    padding-left: 0;
+    padding-bottom: 5px;
+}
+
+.fc-daygrid-day {
+    background-color: #fdfdfd;
+    border: 1px solid #66849e;
+}
+
+.fc-day-today {
+    background-color: #e4e4e4 !important;
+    font-weight: bold;
+}
+
+.fc-daygrid-day.selected-date {
+    background-color: rgb(236, 255, 227) !important;
+}
+
+.fc-toolbar-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #00070e;
+}
+
+.fc-event {
+    background-color: #9CB9EEC1 !important;
+    border: none;
+    padding: 2px 5px;
+    font-size: 0.9rem;
+    border-radius: 4px;
+}
