@@ -1,10 +1,45 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>캘린더</title>
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link href="/css/calendar.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
 </head>
 <body>
+<div class="container">
+    <div id="home-button-container">
+        <a th:href="@{/}" class="home-link">HOME</a>
+    </div>
+    <div id="calendar"></div>
+    <div id="day-panel">
+        <div class="header-row">
+            <h3 id="selected-date"></h3>
+            <button id="open-modal">일정 추가</button>
+        </div>
+        <ul id="schedule-list"></ul>
+    </div>
+</div>
 
+<!-- 일정 추가 모달 -->
+<div class="modal hidden" id="schedule-modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>새 일정 추가</h3>
+        <form id="schedule-form">
+            <input name="scheduleIdHidden" type="hidden">
+            <input name="title" placeholder="제목" required type="text">
+            <textarea name="content" placeholder="내용"></textarea>
+            <input name="start" required type="datetime-local">
+            <input name="end" type="datetime-local">
+            <input name="location" placeholder="장소" type="text">
+            <button type="submit">저장</button>
+        </form>
+    </div>
+</div>
+<script src="/js/calendar.js"></script>
 </body>
 </html>

@@ -69,11 +69,10 @@ public class ScheduleController {
 	}
 
 	// 날짜별 일정 개수 조회
-	@GetMapping("/api/counts")
+	@GetMapping("/counts")
 	public List<ScheduleCountResponse> getScheduleCountsByMonth(
 		@RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
 		@RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
 		return scheduleService.getScheduleCountsByDay(start.toLocalDate(), end.toLocalDate());
 	}
-
 }
