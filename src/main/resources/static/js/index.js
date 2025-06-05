@@ -83,4 +83,13 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll('.card.small-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const query = card.getAttribute('data-query');
+            location.href = `/api/search?query=${encodeURIComponent(query)}`;
+        });
+    });
+});
+
 

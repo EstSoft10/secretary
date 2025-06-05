@@ -1,0 +1,106 @@
+.chat-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+    width: 100%;
+    max-width: 900px;
+    min-height: 200px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.chat-bubble {
+    max-width: 70%;
+    padding: 1rem;
+    border-radius: 12px;
+    line-height: 1.5;
+    word-break: break-word;
+    white-space: normal;
+}
+
+.user {
+    align-self: flex-end;
+    background-color: #d6f3ff;
+}
+
+.ai {
+    align-self: flex-start;
+    background-color: #e0e0e0;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.source-btn {
+    background: none;
+    color: #0066cc;
+    text-decoration: underline;
+    padding: 0;
+    font-size: 0.95rem;
+    border: none;
+    border-radius: 0;
+    cursor: pointer;
+}
+
+.spinner-bubble {
+    align-self: flex-start !important;
+    background-color: #f2f2f2;
+    border-radius: 12px;
+    padding: 1rem;
+    max-width: 60%;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.spinner-circle {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    min-height: 20px;
+    border: 3px solid #ccc;
+    border-top: 3px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+h3 {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+pre {
+    background: #2d2d2d;
+    color: #f8f8f2;
+    padding: 0.75rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.comment {
+    color: #9cdcfe;
+}
+
+code.inline {
+    background-color: #eee;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: Consolas, monospace;
+    font-size: 0.95em;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
