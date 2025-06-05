@@ -10,7 +10,7 @@
 </head>
 <body>
 <main class="main-container">
-    <div th:replace="layout/header :: header"></div>
+    <div th:replace="~{layout/header :: header}"></div>
     <div class="chat-wrapper" id="result"></div>
     <section class="search-box">
         <form class="search-form" id="search-form">
@@ -19,7 +19,7 @@
         </form>
     </section>
 </main>
-<div th:replace="layout/footer :: footer"></div>
+<div th:replace="~{layout/footer :: footer}"></div>
 <div id="loadingOverlay" class="overlay">
     <div class="spinner-container">
         <div class="spinner"></div>

@@ -10,7 +10,7 @@
 </head>
 <body>
 <main class="main-container">
-    <div th:replace="layout/header :: header"></div>
+    <div th:replace="~{layout/header :: header}"></div>
     <div class="content-wrapper">
         <section class="search-box">
             <form class="search-form" th:action="@{/api/search}" method="get">
@@ -40,14 +40,12 @@
                 </div>
             </div>
             <div class="card-row">
-                <div class="card small-card" onclick="location.href='/searchResult?query=오늘 저녁 뭐 먹지?';">
-                    <p>🍱 오늘 저녁 뭐 먹지?</p>
-                </div>
-                <div class="card small-card" onclick="location.href='/searchResult?query=반려동물 사료 시장 분석';">
-                    <p>🐶 반려동물 사료 시장</p>
-                </div>
-                <div class="card small-card" onclick="location.href='/searchResult?query=가성비 좋은 무선 이어폰 추천해줘';">
-                    <p>🎧 무선 이어폰 추천</p>
+                <div th:each="prompt : ${promptList}" class="card small-card"
+                     th:attr="data-query=${prompt.text}">
+                    <p>
+                        <span th:text="${prompt.icon}"></span>
+                        <span th:text="${prompt.text}"></span>
+                    </p>
                 </div>
             </div>
         </section>
@@ -59,6 +57,6 @@
         <p>요약 중입니다. 잠시만 기다려주세요...</p>
     </div>
 </div>
-<div th:replace="layout/footer :: footer"></div>
+<div th:replace="~{layout/footer :: footer}"></div>
 </body>
 </html>
