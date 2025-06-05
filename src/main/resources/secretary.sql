@@ -11,4 +11,11 @@ CREATE TABLE ai_message (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (conversation_id) REFERENCES ai_conversation(id) ON DELETE CASCADE
 );
-
+CREATE TABLE schedule (
+                          schedule_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                          title VARCHAR(255) NOT NULL,
+                          content TEXT,
+                          start DATETIME NOT NULL,
+                          end DATETIME,
+                          location VARCHAR(255)
+);
