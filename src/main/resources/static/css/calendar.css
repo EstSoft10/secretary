@@ -6,40 +6,21 @@ body {
 
 .container {
     display: flex;
+    flex-direction: column;
     gap: 20px;
     padding-top: 50px;
 }
 
 #calendar {
+    flext: 2;
     width: 800px;
     height: 600px;
 }
 
 #day-panel {
-    width: 300px;
+    flex: 1;
     border: 1px solid #ccc;
     padding: 10px;
-}
-
-.home-link {
-    font-weight: bold;
-    font-size: 20px;
-    color: #333;
-    text-decoration: none;
-    margin-right: 80px;
-}
-
-#home-button-container {
-    position: fixed;
-    top: 0;
-    right: 0;
-    left: auto;
-    width: 100%;
-    padding: 10px 20px;
-    z-index: 1000;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
 }
 
 #schedule-list li {
@@ -108,8 +89,8 @@ button {
 }
 
 #open-modal {
-    background-color: #007bff;
-    color: white;
+    background-color: #e6e6e6;
+    color: #00070e;
     padding: 8px 10px;
     border: none;
     border-radius: 5px;
@@ -134,8 +115,15 @@ button {
 }
 
 .fc-daygrid-day.selected-date {
-    background-color: rgb(236, 255, 227) !important;
+    background-color: rgb(255, 244, 179) !important;
 }
+
+#selected-date {
+    font-size: 1.6rem;
+    color: #333;
+    margin: 10px;
+}
+
 
 .fc-toolbar-title {
     font-size: 1.5rem;

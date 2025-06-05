@@ -11,9 +11,9 @@
 </head>
 <body>
 <div class="container">
-    <div id="home-button-container">
-        <a th:href="@{/}" class="home-link">HOME</a>
-    </div>
+
+    <div th:replace="layout/header :: header"></div>
+
     <div id="calendar"></div>
     <div id="day-panel">
         <div class="header-row">
@@ -22,6 +22,7 @@
         </div>
         <ul id="schedule-list"></ul>
     </div>
+    <div th:replace="layout/footer :: footer"></div>
 </div>
 
 <!-- 일정 추가 모달 -->
