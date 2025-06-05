@@ -18,9 +18,4 @@ public class SchedulePageController {
 		return "calendar";
 	}
 
-	@GetMapping("/calendar")
-	public String calendarPage() {
-		return "calendar";
-	}
-
 }
