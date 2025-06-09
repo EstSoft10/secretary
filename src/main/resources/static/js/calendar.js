@@ -20,21 +20,25 @@ document.addEventListener('DOMContentLoaded', function () {
         events: function (fetchInfo, successCallback) {
             const startParam = fetchInfo.startStr.split('+')[0];
             const endParam = fetchInfo.endStr.split('+')[0];
-            Promise.all([
+
+            const startDate = new Date(fetchInfo.start);
+            const endDate = new Date(fetchInfo.end);
+
+            const startYear = startDate.getFullYear();
+            const startMonth = startDate.getMonth() + 1;
+            const endYear = endDate.getFullYear();
+            const endMonth = endDate.getMonth() + 1;
+            const allEvents = [];
+
+            const scheduleFetch = Promise.all([
                 fetch(`/api/schedules?start=${startParam}&end=${endParam}`)
-                    .then(res => {
-                        if (!res.ok) throw new Error('API 요청 실패');
-                        return res.json();
-                    }),
+                    .then(res => res.ok ? res.json() : Promise.reject("일정 조회 실패")),
                 fetch(`/api/schedules/counts?start=${startParam}&end=${endParam}`)
-                    .then(res => {
-                        if (!res.ok) throw new Error('API 요청 실패');
-                        return res.json();
-                    })
+                    .then(res => res.ok ? res.json() : Promise.reject("일정 count 실패"))
             ]).then(([events, counts]) => {
-                const eventList = events || [];
+                (events || []).forEach(e => allEvents.push(e));
                 (counts || []).forEach(c => {
-                    eventList.push({
+                    allEvents.push({
                         title: `${c.count}건`,
                         start: c.date,
                         allDay: true,
@@ -43,9 +47,38 @@ document.addEventListener('DOMContentLoaded', function () {
                         textColor: '#0d47a1'
                     });
                 });
-
-                successCallback(eventList);
             });
+
+            const holidayFetches = [];
+            for (let y = startYear; y <= endYear; y++) {
+                const startM = y === startYear ? startMonth : 1;
+                const endM = y === endYear ? endMonth : 12;
+                for (let m = startM; m <= endM; m++) {
+                    holidayFetches.push(
+                        fetch(`/api/holidays?year=${y}&month=${m.toString().padStart(2, '0')}`)
+                            .then(res => res.ok ? res.json() : [])
+                            .then(holidays => {
+                                (holidays || []).forEach(h => {
+                                    allEvents.push({
+                                        title: h.title,
+                                        start: h.start,
+                                        allDay: true,
+                                        borderColor: '#ffccb6',
+                                        backgroundColor: '#ffccb6',
+                                        textColor: '#c00909'
+                                    });
+                                });
+                            })
+                    );
+                }
+            }
+
+            Promise.all([scheduleFetch, ...holidayFetches])
+                .then(() => successCallback(allEvents))
+                .catch(err => {
+                    console.error("캘린더 Events 로드 실패", err);
+                    successCallback([]);
+                });
         },
         dateClick: function (info) {
             currentSelectedDate = info.dateStr;

@@ -115,7 +115,7 @@ button {
 }
 
 .fc-daygrid-day.selected-date {
-    background-color: rgb(255, 244, 179) !important;
+    background-color: rgb(255, 252, 179) !important;
 }
 
 #selected-date {
@@ -132,9 +132,13 @@ button {
 }
 
 .fc-event {
-    background-color: #9CB9EEC1 !important;
+    background-color: #9CB9EEC1;
     border: none;
     padding: 2px 5px;
     font-size: 0.9rem;
     border-radius: 4px;
+}
+
+.fc-daygrid-event-dot {
+    display: none !important;
 }
