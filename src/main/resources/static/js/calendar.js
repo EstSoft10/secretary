@@ -121,13 +121,20 @@ document.addEventListener('DOMContentLoaded', function () {
                             .toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})
                         : '';
                     const li = document.createElement('li');
+
+                    const hasLocation = !!s.location;
+                    const aiButton = hasLocation
+                        ? `<button class="ai-btn" data-location="${s.location}" data-title="${s.title}">이곳은 어때요?</button>`
+                        : '';
+
                     li.innerHTML = `
-                        <div>
-                            <strong>${start}${end ? ' ~ ' + end : ''} ${s.location ? '(' + s.location + ')' : ''} ${s.title}</strong><br>
-                            <button class="edit-btn"   data-id="${s.scheduleId}">수정</button>
-                            <button class="delete-btn" data-id="${s.scheduleId}">삭제</button>
-                        </div>
-                    `;
+                    <div>
+                        <strong>${start}${end ? ' ~ ' + end : ''} ${hasLocation ? '(' + s.location + ')' : ''} ${s.title}</strong><br>
+                        <button class="edit-btn"   data-id="${s.scheduleId}">수정</button>
+                        <button class="delete-btn" data-id="${s.scheduleId}">삭제</button>
+                        ${aiButton}
+                    </div>
+                `;
                     scheduleList.appendChild(li);
                 });
             });
@@ -163,6 +170,20 @@ document.addEventListener('DOMContentLoaded', function () {
                     scheduleForm.querySelector('input[name="scheduleIdHidden"]').value = id;
                     modal.classList.remove('hidden');
                 });
+        } else if (target.classList.contains('ai-btn')) {
+            const location = target.dataset.location;
+            const title = target.dataset.title;
+            if (location && title) {
+                const query = `${location} 근처에서 ${title} 하기 좋은 장소 추천해줘`;
+
+                const queryStr = encodeURIComponent(`${location} 근처에서 ${title} 하기 좋은 장소 추천해줘`);
+                fetch(`/ai/async-search?query=${queryStr}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        const q = encodeURIComponent(`${location} 근처에서 ${title} 하기 좋은 장소 추천해줘`);
+                        window.location.href = `/searchResult?query=${q}&conversationId=${data.conversationId}`;
+                    });
+            }
         }
     });
 
