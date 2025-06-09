@@ -40,8 +40,30 @@ public class AIConversationService {
 		return conversationRepo.save(conversation);
 	}
 
+	public void addMessage(Long conversationId, String userMessage, String aiResponse) {
+		AIConversation conversation = conversationRepo.findById(conversationId)
+			.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 대화 ID"));
+
+		AIMessage userMsg = AIMessage.builder()
+			.conversation(conversation)
+			.sender(AIMessage.Sender.USER)
+			.message(userMessage)
+			.build();
+
+		AIMessage aiMsg = AIMessage.builder()
+			.conversation(conversation)
+			.sender(AIMessage.Sender.AI)
+			.message(aiResponse)
+			.build();
+
+		messageRepo.save(userMsg);
+		messageRepo.save(aiMsg);
+
+		conversationRepo.save(conversation);
+	}
+
 	public List<AIConversation> getConversations(Long userId) {
-		return conversationRepo.findByUserIdOrderByCreatedAtDesc(userId);
+		return conversationRepo.findByUserIdOrderByUpdatedAtDesc(userId);
 	}
 
 	public List<AIMessage> getMessages(Long conversationId) {

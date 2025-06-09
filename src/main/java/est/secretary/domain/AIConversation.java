@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -34,6 +35,9 @@ public class AIConversation {
 
 	@CreationTimestamp
 	private LocalDateTime createdAt;
+
+	@UpdateTimestamp
+	private LocalDateTime updatedAt;
 
 	@Builder.Default
 	@OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true)

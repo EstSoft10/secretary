@@ -4,6 +4,7 @@ const resultDiv = document.getElementById("result");
 const form = document.getElementById("search-form");
 const input = form.query;
 let isFirst = true;
+let currentConversationId = null;
 
 if (query) fetchResult(query);
 
@@ -72,10 +73,12 @@ function extractYoutubeUrl(text) {
 
 function fetchResult(query) {
     input.disabled = true;
+
     const userBubble = document.createElement("div");
     userBubble.className = "chat-bubble user";
     userBubble.textContent = query;
     resultDiv.appendChild(userBubble);
+
     const spinnerBubble = document.createElement("div");
     spinnerBubble.className = "spinner-bubble";
     spinnerBubble.style.alignSelf = "flex-start";
@@ -86,33 +89,58 @@ function fetchResult(query) {
     spinnerBubble.appendChild(spinnerText);
     spinnerBubble.appendChild(spinner);
     resultDiv.appendChild(spinnerBubble);
+
     requestAnimationFrame(() => spinnerBubble.scrollIntoView({behavior: "smooth"}));
 
-    fetch("/api/async-search?query=" + encodeURIComponent(query))
-        .then(res => res.text())
-        .then(text => {
-            const data = JSON.parse(text);
-            const contentHtml = formatContent(data.content || "응답 없음");
+    let apiUrl = "/api/async-search?query=" + encodeURIComponent(query);
+    if (currentConversationId) {
+        apiUrl += "&conversationId=" + currentConversationId;
+    }
+
+    fetch(apiUrl)
+        .then(res => res.json())
+        .then(data => {
+            if (data.conversationId) {
+                currentConversationId = data.conversationId;
+            }
+            let rawContent = data.content || "응답 없음";
+            if (typeof rawContent === "string" && rawContent.startsWith("{") && rawContent.includes("content")) {
+                try {
+                    const parsed = JSON.parse(rawContent);
+                    rawContent = parsed.content || rawContent;
+                } catch (e) {
+                    console.warn("content JSON 파싱 실패:", e);
+                }
+            }
+
+            const contentHtml = formatContent(rawContent);
+
             resultDiv.removeChild(spinnerBubble);
             const aiContent = document.createElement("div");
             aiContent.className = "chat-bubble ai";
             aiContent.innerHTML = contentHtml;
             resultDiv.appendChild(aiContent);
             aiContent.scrollIntoView({behavior: "smooth"});
+
             isFirst = false;
         })
         .catch(err => alert("❌ 오류 발생: " + err))
         .finally(() => input.disabled = false);
+
 }
 
 function formatContent(text) {
-    let codeBlocks = [];
-    let content = text.replace(/```(\w*)\n([\s\S]*?)```/g, function (_, lang, code) {
-        const highlighted = code
+    const codeBlocks = [];
+    let content = text.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
+        const escaped = code
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
             .replace(/(^|\n)(\s*)#(.*)/g, '$1$2<span class="comment">#$3</span>')
             .replace(/(^|\n)(\s*)\/\/(.*)/g, '$1$2<span class="comment">//$3</span>');
+
         const placeholder = `__CODEBLOCK_${codeBlocks.length}__`;
-        codeBlocks.push(`<pre><code class="language-${lang}">${highlighted}</code></pre>`);
+        codeBlocks.push(`<pre><code class="language-${lang}">${escaped}</code></pre>`);
         return placeholder;
     });
     content = content.replace(/^###\s(.+)$/gm, '<h3>$1</h3>');
@@ -120,24 +148,21 @@ function formatContent(text) {
     content = content.replace(/\[(.+?)\]\((.*?)\)/g, '<a href="$2" target="_blank" class="source-btn">$1</a>');
     let isFirstBold = true;
     content = content.replace(/\*\*(.+?)\*\*/g, (match, text, offset, fullText) => {
-        const before = fullText.slice(Math.max(0, offset - 20), offset).trim();
-        const isNumberLine = /^\d+\.\s*$/.test(before);
-        const isDashLine = before.endsWith("-") || before.endsWith("-<br>");
-        if (isFirstBold) {
+        const before = fullText.slice(Math.max(0, offset - 40), offset);
+        const isInH3 = /<h3>[^<]*$/.test(before);
+        const isStartOfLine = /(^|\n)[\d\-•]*\s*$/.test(before);
+
+        if (isFirstBold || isStartOfLine || isInH3) {
             isFirstBold = false;
-            return `<span class="bold">${text}</span>`;
-        }
-        if (before.endsWith('<br>') || isNumberLine || isDashLine) {
             return `<span class="bold">${text}</span>`;
         }
         return `<br><span class="bold">${text}</span>`;
     });
     content = content.replace(/^(\d+)\.\s*<br>\s*<span class="bold">/gm, '$1. <span class="bold">');
-    content = content.replace(/([^\n])\n(?!<\/h3>)/g, '$1<br>');
-    content = content.replace(/(\.<br>)(?!<br>)/g, '$1<br>');
+    content = content.replace(/([^\n])\n(?!(<\/?h3>|<\/?pre>))/g, '$1<br>');
     codeBlocks.forEach((block, i) => {
         content = content.replace(`__CODEBLOCK_${i}__`, block);
     });
+
     return content;
 }
-

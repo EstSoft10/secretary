@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import est.secretary.domain.AIConversation;
 
 public interface AIConversationRepository extends JpaRepository<AIConversation, Long> {
-	List<AIConversation> findByUserIdOrderByCreatedAtDesc(Long userId);
+	List<AIConversation> findByUserIdOrderByUpdatedAtDesc(Long userId);
 }

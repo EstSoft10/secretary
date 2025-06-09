@@ -2,6 +2,8 @@ package est.secretary;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -13,6 +15,7 @@ import est.secretary.domain.AIMessage;
 import est.secretary.repository.AIConversationRepository;
 import est.secretary.repository.AIMessageRepository;
 import est.secretary.service.AIConversationService;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 
 @SpringBootTest
@@ -27,6 +30,9 @@ public class AIConversationServiceTest {
 
 	@Autowired
 	private AIMessageRepository messageRepository;
+
+	@Autowired
+	private EntityManager em;
 
 	private static final Long TEST_USER_ID = 1L;
 
@@ -63,4 +69,20 @@ public class AIConversationServiceTest {
 		assertThat(conversationRepository.findById(id)).isEmpty();
 		assertThat(messageRepository.findByConversationIdOrderByCreatedAt(id)).isEmpty();
 	}
+
+	@Test
+	void 메시지_추가시_updatedAt_갱신됨() throws InterruptedException {
+		AIConversation conversation = conversationService.createConversation(TEST_USER_ID, "초기 질문", "초기 응답");
+		Long conversationId = conversation.getId();
+		LocalDateTime initialUpdatedAt = conversation.getUpdatedAt();
+		Thread.sleep(1000);
+		conversationService.addMessage(conversationId, "후속 질문", "후속 응답");
+		em.flush();
+		em.clear();
+		AIConversation updated = conversationRepository.findById(conversationId).orElseThrow();
+		assertThat(updated.getUpdatedAt().truncatedTo(ChronoUnit.SECONDS))
+			.isAfterOrEqualTo(initialUpdatedAt.truncatedTo(ChronoUnit.SECONDS));
+
+	}
+
 }

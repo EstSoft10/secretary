@@ -1,7 +1,12 @@
+drop table if exists ai_message;
+drop table if exists ai_conversation;
+drop table if exists schedule;
+
 CREATE TABLE ai_conversation (
-     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-     user_id BIGINT NOT NULL,
-     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 CREATE TABLE ai_message (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -12,10 +17,10 @@ CREATE TABLE ai_message (
     FOREIGN KEY (conversation_id) REFERENCES ai_conversation(id) ON DELETE CASCADE
 );
 CREATE TABLE schedule (
-                          schedule_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                          title VARCHAR(255) NOT NULL,
-                          content TEXT,
-                          start DATETIME NOT NULL,
-                          end DATETIME,
-                          location VARCHAR(255)
+    schedule_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    content TEXT,
+    start DATETIME NOT NULL,
+    end DATETIME,
+    location VARCHAR(255)
 );

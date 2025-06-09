@@ -16,6 +16,7 @@
             <form class="search-form" th:action="@{/api/search}" method="get">
                 <input type="text" name="query" placeholder="앨런에게 물어보세요!" required/>
                 <button type="submit">검색</button>
+                <button type="button" onclick="startSpeech()" title="음성으로 검색">🎤</button>
             </form>
         </section>
         <section class="card-section">
