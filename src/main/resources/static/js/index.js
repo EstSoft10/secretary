@@ -90,6 +90,31 @@ document.addEventListener("DOMContentLoaded", () => {
             location.href = `/api/search?query=${encodeURIComponent(query)}`;
         });
     });
+    window.startSpeech = function () {
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'ko-KR';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.start();
+
+        recognition.onstart = () => {
+            console.log("음성 인식 시작");
+        };
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            const input = document.querySelector('input[name="query"]');
+            input.value = transcript;
+            location.href = `/searchResult?query=${encodeURIComponent(transcript)}`;
+            input.value = "";
+        };
+
+        recognition.onerror = (event) => {
+            alert("음성 인식 오류: " + event.error);
+        };
+    };
+
 });
 
 

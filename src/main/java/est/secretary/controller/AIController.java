@@ -2,6 +2,7 @@ package est.secretary.controller;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +46,29 @@ public class AIController {
 
 	@GetMapping("/async-search")
 	@ResponseBody
-	public Mono<String> asyncSearch(@RequestParam(required = false) Long userId, @RequestParam String query) {
+	public Mono<Map<String, Object>> asyncSearch(@RequestParam(required = false) Long userId,
+		@RequestParam String query, @RequestParam(required = false) Long conversationId) {
+		//로그인 기능 완료시 삭제
+		userId = 1L;
+		if (userId == null) {
+			return callApi(query).map(res -> Map.of("content", res));
+		}
+
+		if (conversationId != null) {
+			return callApi(query).map(res -> {
+				conversationService.addMessage(conversationId, query, res);
+				return Map.of("content", res, "conversationId", conversationId);
+			});
+		} else {
+			return callApi(query).map(res -> {
+				//로그인 기능 완료시 userId로 변경
+				Long newId = conversationService.createConversation(1L, query, res).getId();
+				return Map.of("content", res, "conversationId", newId);
+			});
+		}
+	}
+
+	private Mono<String> callApi(String query) {
 		return webClient.get()
 			.uri(uriBuilder -> uriBuilder
 				.scheme("https")
@@ -56,10 +79,6 @@ public class AIController {
 				.build())
 			.retrieve()
 			.bodyToMono(String.class)
-			.doOnNext(res -> {
-				log.info("응답 성공: {}", res);
-				conversationService.createConversation(1L, query, res);
-			})
 			.doOnError(e -> log.error("WebClient 호출 에러", e))
 			.onErrorReturn("서버 응답이 지연되거나 실패했습니다. 잠시 후 다시 시도해주세요.");
 	}
