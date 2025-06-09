@@ -142,3 +142,30 @@ button {
 .fc-daygrid-event-dot {
     display: none !important;
 }
+
+#schedule-list li {
+    border-bottom: 1px groove #e0e0e0;
+    padding: 10px 0;
+}
+
+#schedule-list li:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.ai-btn {
+    position: relative;
+    right: 20px;
+    margin-top: -20px;
+    background: #f0f4ff;
+    border: none;
+    border-radius: 16px;
+    padding: 7px 7px;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+    max-width: 280px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    text-align: left;
+    float: right;
+}
