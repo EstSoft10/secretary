@@ -45,6 +45,14 @@ body.no-scroll {
     padding-top: 60px;
 }
 
+.profile-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 0.5rem;
+}
+
 .side-menu.open {
     display: block;
     transform: translateX(0);
