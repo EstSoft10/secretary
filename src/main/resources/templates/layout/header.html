@@ -1,6 +1,6 @@
 <header class="header" th:fragment="header">
     <div class="logo">
-        <a th:href="@{/}">A:ssistant</a>
+        <a th:href="@{/static}">A:ssistant</a>
     </div>
     <div class="hamburger" id="hamburger" onclick="toggleMenu(true)">
         &#9776;
@@ -20,30 +20,38 @@
                 </a>
             </li>
         </ul>
+
         <div th:if="${#authentication == null or !#authentication.authenticated}" class="side-menu-login-message">
             <p>대화 기록을 보시려면<br>로그인이 필요합니다.</p>
             <a th:href="@{/login}" class="login-btn">로그인 하시겠습니까?</a>
         </div>
+
+        <div th:if="${#authentication != null and #authentication.authenticated}" class="side-menu-user-info">
+            <div class="user-profile">
+                <img th:src="${#authentication.principal.profileImage}" alt="프로필 이미지" class="profile-image">
+                <p th:text="${#authentication.principal.name + '님'}"></p>
+            </div>
+            <a th:href="@{/logout}" class="logout-btn">로그아웃</a>
+        </div>
     </nav>
+
     <script th:inline="javascript">
         document.addEventListener("DOMContentLoaded", function () {
             window.isLoggedIn = /*[[${#authentication != null and #authentication.authenticated}]]*/ false;
+
             window.handleProtectedLink = function (path, event) {
                 if (event) event.preventDefault();
-                // 로그인 해결 후 처리
-                // if (!window.isLoggedIn) {
-                //     alert("로그인이 필요합니다.");
-                //     return;
-                // }
+                if (!window.isLoggedIn) {
+                    alert("로그인이 필요합니다.");
+                    return;
+                }
                 window.location.href = path;
             };
+
             window.toggleMenu = function (show) {
                 const menu = document.getElementById("sideMenu");
                 menu.style.display = show ? "block" : "none";
             };
         });
-
     </script>
 </header>
-
-
