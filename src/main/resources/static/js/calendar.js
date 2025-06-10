@@ -175,13 +175,12 @@ document.addEventListener('DOMContentLoaded', function () {
             const title = target.dataset.title;
             if (location && title) {
                 const query = `${location} 근처에서 ${title} 하기 좋은 장소 추천해줘`;
+                const encodedQuery = encodeURIComponent(query);
 
-                const queryStr = encodeURIComponent(`${location} 근처에서 ${title} 하기 좋은 장소 추천해줘`);
-                fetch(`/ai/async-search?query=${queryStr}`)
+                fetch(`/ai/async-search?query=${encodedQuery}`)
                     .then(res => res.json())
                     .then(data => {
-                        const q = encodeURIComponent(`${location} 근처에서 ${title} 하기 좋은 장소 추천해줘`);
-                        window.location.href = `/searchResult?query=${q}&conversationId=${data.conversationId}`;
+                        window.location.href = `/searchResult?query=${encodedQuery}&conversationId=${data.conversationId}`;
                     });
             }
         }

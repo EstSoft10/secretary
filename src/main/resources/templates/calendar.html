@@ -12,7 +12,7 @@
 <body>
 <div class="container">
 
-    <div th:replace="layout/header :: header"></div>
+    <div th:replace="~{layout/header :: header}"></div>
 
     <div id="calendar"></div>
     <div id="day-panel">
@@ -22,7 +22,7 @@
         </div>
         <ul id="schedule-list"></ul>
     </div>
-    <div th:replace="layout/footer :: footer"></div>
+    <div th:replace="~{layout/footer :: footer}"></div>
 </div>
 
 <!-- 일정 추가 모달 -->
