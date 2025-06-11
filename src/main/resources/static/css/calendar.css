@@ -1,7 +1,6 @@
 body {
     display: flex;
     justify-content: center;
-    padding: 20px;
 }
 
 .container {
@@ -20,7 +19,13 @@ body {
 #day-panel {
     flex: 1;
     border: 1px solid #ccc;
-    padding: 10px;
+    border-radius: 12px;
+    padding: 20px;
+    background-color: #fafafa;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    margin-top: 20px;
+    max-width: 800px;
+    max-height: 50px;
 }
 
 #schedule-list li {
@@ -52,12 +57,14 @@ button {
 .modal-content {
     background: #fff;
     padding: 30px;
-    border-radius: 8px;
-    width: 500px;
-    height: 500px;
+    border-radius: 12px;
+    width: 480px;
+    max-height: 90vh;
     overflow-y: auto;
-    z-index: 1001;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    position: relative;
 }
+
 
 #schedule-modal .modal-content textarea[name="content"] {
     height: 150px;
@@ -75,10 +82,13 @@ button {
 }
 
 .close {
-    float: right;
-    cursor: pointer;
-    font-size: 20px;
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    font-size: 24px;
     font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 10px;
 }
 
 .header-row {
@@ -89,13 +99,18 @@ button {
 }
 
 #open-modal {
-    background-color: #e6e6e6;
-    color: #00070e;
-    padding: 8px 10px;
+    background-color: #4A90E2;
+    color: #fff;
+    font-weight: bold;
+    padding: 8px 14px;
     border: none;
-    border-radius: 5px;
+    border-radius: 6px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+}
+
+#open-modal:hover {
+    background-color: #3a78c2;
 }
 
 #schedule-list {
@@ -168,4 +183,39 @@ button {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     text-align: left;
     float: right;
+}
+
+.fc .fc-toolbar.fc-header-toolbar {
+    margin-top: 1.5em;
+}
+
+#schedule-form input[type="text"],
+#schedule-form input[type="datetime-local"],
+#schedule-form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+#schedule-form button[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    background-color: #4A90E2;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+#schedule-form button[type="submit"]:hover {
+    background-color: #3a78c2;
+}
+
+.calendar-title {
+    margin-top: 20px;
 }

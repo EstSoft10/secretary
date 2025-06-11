@@ -236,3 +236,23 @@ body {
     font-weight: bold;
     color: #333;
 }
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.4;
+    }
+}
+
+.mic-blinking {
+    animation: blink 1s infinite;
+}
+
+.profile-image {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+}

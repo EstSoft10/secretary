@@ -12,9 +12,14 @@
 <main class="main-container">
     <div th:replace="~{layout/header :: header}"></div>
     <div class="content-wrapper">
+        <div class="user-profile">
+            <img th:src="${#authentication.principal.profileImage}" alt="프로필 이미지" class="profile-image">
+            <p th:text="${#authentication.principal.name + '님의 일정'}"></p>
+        </div>
         <section class="search-box">
             <form class="search-form" th:action="@{/api/search}" method="get">
                 <input type="text" name="query" placeholder="앨런에게 물어보세요!" required/>
+                <input name="userId" th:value="${#authentication.principal.id}" type="hidden">
                 <button type="submit">검색</button>
                 <button type="button" onclick="startSpeech()" title="음성으로 검색">🎤</button>
             </form>
@@ -52,12 +57,6 @@
         </section>
     </div>
 </main>
-<div id="loadingOverlay" class="overlay">
-    <div class="spinner-container">
-        <div class="spinner"></div>
-        <p>요약 중입니다. 잠시만 기다려주세요...</p>
-    </div>
-</div>
 <div th:replace="~{layout/footer :: footer}"></div>
 </body>
 </html>

@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,8 +17,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriUtils;
 
-import est.secretary.domain.AIConversation;
-import est.secretary.domain.AIMessage;
+import est.secretary.domain.CustomOAuth2User;
+import est.secretary.dto.AIConversationDto;
+import est.secretary.dto.AIMessageDto;
 import est.secretary.service.AIConversationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,14 +48,12 @@ public class AIController {
 
 	@GetMapping("/async-search")
 	@ResponseBody
-	public Mono<Map<String, Object>> asyncSearch(@RequestParam(required = false) Long userId,
+	public Mono<Map<String, Object>> asyncSearch(@AuthenticationPrincipal CustomOAuth2User principal,
 		@RequestParam String query, @RequestParam(required = false) Long conversationId) {
-		//로그인 기능 완료시 삭제
-		userId = 1L;
+		Long userId = principal != null ? principal.getMember().getId() : null;
 		if (userId == null) {
 			return callApi(query).map(res -> Map.of("content", res));
 		}
-
 		if (conversationId != null) {
 			return callApi(query).map(res -> {
 				conversationService.addMessage(conversationId, query, res);
@@ -61,8 +61,7 @@ public class AIController {
 			});
 		} else {
 			return callApi(query).map(res -> {
-				//로그인 기능 완료시 userId로 변경
-				Long newId = conversationService.createConversation(1L, query, res).getId();
+				Long newId = conversationService.createConversation(userId, query, query, res).getId();
 				return Map.of("content", res, "conversationId", newId);
 			});
 		}
@@ -85,13 +84,13 @@ public class AIController {
 
 	@GetMapping("/conversation/{userId}")
 	@ResponseBody
-	public List<AIConversation> getAllConversations(@PathVariable Long userId) {
+	public List<AIConversationDto> getAllConversations(@PathVariable Long userId) {
 		return conversationService.getConversations(userId);
 	}
 
 	@GetMapping("/conversation/detail/{conversationId}")
 	@ResponseBody
-	public List<AIMessage> getMessages(@PathVariable Long conversationId) {
+	public List<AIMessageDto> getMessages(@PathVariable Long conversationId) {
 		return conversationService.getMessages(conversationId);
 	}
 

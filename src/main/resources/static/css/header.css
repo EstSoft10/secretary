@@ -2,11 +2,13 @@
     position: relative;
     display: flex;
     justify-content: space-between;
+    align-items: center;
     width: 100%;
     background-color: #e6e6e6;
     padding: 20px 0;
     border-bottom: 1px solid #939393;
     z-index: 2;
+    height: 20px;
 }
 
 body.no-scroll {
@@ -45,40 +47,32 @@ body.no-scroll {
     padding-top: 60px;
 }
 
-.profile-image {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-right: 0.5rem;
+.side-menu-user-info {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    position: relative;
+}
+
+.logout-form {
+    position: absolute;
+    right: 20px;
+}
+
+
+.logout-btn {
+    background-color: transparent;
+    border: 1px solid #000;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
 }
 
 .side-menu.open {
     display: block;
     transform: translateX(0);
-}
-
-.side-menu ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.side-menu li {
-    padding: 15px 20px;
-    justify-content: center;
-    border-top: 1px solid black;
-}
-
-.side-menu li:nth-last-child(1) {
-    border-bottom: 1px solid black;
-
-}
-
-.side-menu a {
-    text-decoration: none;
-    color: #333;
-    font-size: 18px;
 }
 
 .close-btn {
@@ -89,10 +83,68 @@ body.no-scroll {
     cursor: pointer;
 }
 
-.menu-icon {
-    width: 40px;
-    height: 40px;
-    object-fit: contain;
-    display: block;
-    margin: 0 auto;
+.conversation-history {
+    padding: 10px;
+    font-size: 14px;
+}
+
+.history-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.date-group {
+    margin-bottom: 10px;
+}
+
+.conversation-list {
+    margin: 5px 0 0 10px;
+    padding-left: 10px;
+    list-style: none;
+}
+
+.conversation-list li {
+    margin: 4px 0;
+}
+
+.conversation-list li a {
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+    display: inline-block;
+    padding: 4px 6px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.conversation-list li a:hover {
+    background-color: #f0f0f0;
+    color: #000;
+}
+
+.date-header {
+    cursor: pointer;
+    font-weight: bold;
+    padding: 5px 8px;
+    margin-top: 10px;
+    background-color: #ddd;
+    border-radius: 4px;
+    user-select: none;
+}
+
+.arrow {
+    display: inline-block;
+    width: 1em;
+    text-align: center;
+    margin-right: 5px;
+}
+
+.hidden {
+    display: none;
+}
+
+.search-name {
+    font-weight: 500;
+    font-size: 18px;
+    margin-bottom: 30px;
 }
