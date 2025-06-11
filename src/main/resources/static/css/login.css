@@ -27,51 +27,46 @@ body {
     margin-bottom: 2rem;
 }
 
-.login-buttons a {
-    display: block;
-    margin: 0.5rem 0;
-    padding: 0.75rem;
+.login-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.login-btn {
+    width: 100%;
+    max-width: 400px;
+    height: 50px;
     border-radius: 8px;
-    color: white;
-    text-decoration: none;
-    font-weight: bold;
     font-size: 1rem;
+    font-weight: bold;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #000;
+    cursor: pointer;
 }
 
-.naver {
+.icon {
+    width: 24px;
+    height: 24px;
+}
+
+.naver-btn {
     background-color: #03C75A;
+    color: #000;
 }
 
-.kakao {
+.kakao-btn {
     background-color: #FEE500;
     color: #000;
 }
 
-.google {
-    background-color: #E0E0E0;
-    color: #333;
-}
-
-.apple {
-    background-color: #000;
-}
-
-.login-links {
-    margin-top: 1.5rem;
-    font-size: 0.9rem;
-}
-
-
-.partner-logos img {
-    width: 36px;
-    height: 36px;
-    margin: 0 4px;
-}
-
-
-
-footer a {
-    color: #777;
-    margin: 0 0.5rem;
-    text-decoration: none;
+.google-btn {
+    background-color: white;
+    color: #000;
+    border: 1px solid #ccc;
 }

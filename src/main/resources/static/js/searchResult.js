@@ -4,9 +4,8 @@ const resultDiv = document.getElementById("result");
 const form = document.getElementById("search-form");
 const input = form.query;
 let isFirst = true;
-let currentConversationId = null;
-
-if (query) fetchResult(query);
+let currentConversationId = urlParams.get("conversationId");
+console.log(currentConversationId);
 
 document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("search-form");
@@ -25,6 +24,47 @@ document.addEventListener("DOMContentLoaded", function () {
         input.value = "";
     });
 });
+document.addEventListener("DOMContentLoaded", () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const conversationId = urlParams.get("conversationId");
+    const query = urlParams.get("query");
+
+    if (query) {
+        fetchResult(query);
+    } else if (conversationId) {
+        fetchConversation(conversationId);
+    }
+});
+
+function fetchConversation(conversationId) {
+    fetch(`/api/conversation/detail/${conversationId}`)
+        .then(res => res.json())
+        .then(messages => {
+            messages.forEach(msg => {
+                const bubble = document.createElement("div");
+                bubble.className = `chat-bubble ${msg.sender === "USER" ? "user" : "ai"}`;
+
+                let textContent = msg.message;
+
+                if (msg.sender === "AI") {
+                    try {
+                        const parsed = JSON.parse(msg.message);
+                        textContent = parsed.content || msg.message;
+                    } catch (e) {
+                        console.warn("AI 응답 JSON 파싱 실패:", e);
+                    }
+                    bubble.innerHTML = formatContent(textContent);
+                } else {
+                    bubble.textContent = textContent;
+                }
+
+                resultDiv.appendChild(bubble);
+            });
+            resultDiv.scrollTop = resultDiv.scrollHeight;
+        })
+        .catch(err => alert("❌ 대화 불러오기 오류: " + err));
+}
+
 
 async function handleYoutubeSummary(query) {
     input.disabled = true;
@@ -72,8 +112,6 @@ function extractYoutubeUrl(text) {
 
 
 function fetchResult(query) {
-    input.disabled = true;
-
     const userBubble = document.createElement("div");
     userBubble.className = "chat-bubble user";
     userBubble.textContent = query;
@@ -92,6 +130,9 @@ function fetchResult(query) {
 
     requestAnimationFrame(() => spinnerBubble.scrollIntoView({behavior: "smooth"}));
 
+    const submitButton = form.querySelector("button");
+    submitButton.disabled = true;
+
     let apiUrl = "/api/async-search?query=" + encodeURIComponent(query);
     if (currentConversationId) {
         apiUrl += "&conversationId=" + currentConversationId;
@@ -103,7 +144,9 @@ function fetchResult(query) {
             if (data.conversationId) {
                 currentConversationId = data.conversationId;
             }
+
             let rawContent = data.content || "응답 없음";
+
             if (typeof rawContent === "string" && rawContent.startsWith("{") && rawContent.includes("content")) {
                 try {
                     const parsed = JSON.parse(rawContent);
@@ -116,17 +159,17 @@ function fetchResult(query) {
             const contentHtml = formatContent(rawContent);
 
             resultDiv.removeChild(spinnerBubble);
+
             const aiContent = document.createElement("div");
             aiContent.className = "chat-bubble ai";
             aiContent.innerHTML = contentHtml;
             resultDiv.appendChild(aiContent);
             aiContent.scrollIntoView({behavior: "smooth"});
-
-            isFirst = false;
         })
         .catch(err => alert("❌ 오류 발생: " + err))
-        .finally(() => input.disabled = false);
-
+        .finally(() => {
+            submitButton.disabled = false;
+        });
 }
 
 function formatContent(text) {

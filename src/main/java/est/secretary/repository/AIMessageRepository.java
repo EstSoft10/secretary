@@ -10,4 +10,7 @@ public interface AIMessageRepository extends JpaRepository<AIMessage, Long> {
 	List<AIMessage> findByConversationIdOrderByCreatedAt(Long conversationId);
 
 	void deleteByConversationId(Long conversationId);
+
+	List<AIMessage> findByConversationIdOrderByCreatedAtAsc(Long conversationId);
+
 }

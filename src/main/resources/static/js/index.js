@@ -90,31 +90,69 @@ document.addEventListener("DOMContentLoaded", () => {
             location.href = `/api/search?query=${encodeURIComponent(query)}`;
         });
     });
+    let recognition;
+    let isRecognizing = false;
+    let transcriptBuffer = "";
+    let idleTimer = null;
+
     window.startSpeech = function () {
+        if (isRecognizing) return;
+        isRecognizing = true;
+
+        recognition = createRecognition();
+        recognition.start();
+
+        const micButton = document.querySelector('button[title="음성으로 검색"]');
+        micButton.classList.add("mic-blinking");
+    };
+
+    function createRecognition() {
         const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
         recognition.lang = 'ko-KR';
         recognition.interimResults = false;
         recognition.maxAlternatives = 1;
 
-        recognition.start();
-
-        recognition.onstart = () => {
-            console.log("음성 인식 시작");
-        };
-
         recognition.onresult = (event) => {
-            const transcript = event.results[0][0].transcript;
-            const input = document.querySelector('input[name="query"]');
-            input.value = transcript;
-            location.href = `/searchResult?query=${encodeURIComponent(transcript)}`;
-            input.value = "";
+            const partial = event.results[0][0].transcript;
+            transcriptBuffer += (transcriptBuffer ? " " : "") + partial;
+
+            if (idleTimer) clearTimeout(idleTimer);
+            idleTimer = setTimeout(() => {
+                sendTranscript();
+            }, 2000);
         };
 
         recognition.onerror = (event) => {
             alert("음성 인식 오류: " + event.error);
+            cleanup();
         };
-    };
 
+        recognition.onend = () => {
+            if (isRecognizing) {
+                recognition.start();
+            }
+        };
+
+        return recognition;
+    }
+
+    function sendTranscript() {
+        if (transcriptBuffer.trim()) {
+            const input = document.querySelector('input[name="query"]');
+            input.value = transcriptBuffer;
+            location.href = `/searchResult?query=${encodeURIComponent(transcriptBuffer)}`;
+        }
+        cleanup();
+    }
+
+    function cleanup() {
+        isRecognizing = false;
+        transcriptBuffer = "";
+        const micButton = document.querySelector('button[title="음성으로 검색"]');
+        micButton.classList.remove("mic-blinking");
+        if (idleTimer) clearTimeout(idleTimer);
+        recognition.stop();
+    }
 });
 
 
