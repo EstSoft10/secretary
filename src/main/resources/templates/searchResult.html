@@ -11,7 +11,7 @@
 <body>
 <main class="main-container">
     <div th:replace="~{layout/header :: header}"></div>
-    <div class="chat-wrapper" id="result"></div>
+    <div class="chat-wrapper" id="result" th:data-result="${result}"></div>
     <section class="search-box">
         <form class="search-form" id="search-form">
             <input type="text" name="query" placeholder="앨런에게 물어보세요!" required/>

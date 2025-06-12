@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,6 +22,7 @@ import est.secretary.domain.CustomOAuth2User;
 import est.secretary.dto.AIConversationDto;
 import est.secretary.dto.AIMessageDto;
 import est.secretary.service.AIConversationService;
+import est.secretary.service.PromptCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
@@ -33,6 +35,7 @@ public class AIController {
 
 	private final WebClient webClient;
 	private final AIConversationService conversationService;
+	private final PromptCacheService promptCacheService;
 
 	@Value("${client.id}")
 	private String clientId;
@@ -100,4 +103,19 @@ public class AIController {
 		conversationService.deleteConversation(conversationId);
 		return ResponseEntity.ok().build();
 	}
+
+	@GetMapping("/prompt-click")
+	public String handlePromptClick(@RequestParam String query, @AuthenticationPrincipal CustomOAuth2User principal,
+		Model model) {
+
+		String response = promptCacheService.getCached(query);
+
+		if (principal != null) {
+			Long userId = principal.getMember().getId();
+			conversationService.createConversation(userId, query, query, response);
+		}
+		model.addAttribute("result", response);
+		return "searchResult";
+	}
+
 }

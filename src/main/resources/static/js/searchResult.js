@@ -29,12 +29,36 @@ document.addEventListener("DOMContentLoaded", () => {
     const conversationId = urlParams.get("conversationId");
     const query = urlParams.get("query");
 
-    if (query) {
+    const resultElement = document.getElementById("result");
+    const cachedResult = resultElement.dataset.result;
+
+    if (cachedResult && cachedResult.trim()) {
+        renderAIResponse(cachedResult);
+    } else if (query) {
         fetchResult(query);
     } else if (conversationId) {
         fetchConversation(conversationId);
     }
 });
+
+function renderAIResponse(content) {
+    let parsedContent = content;
+
+    try {
+        const parsed = JSON.parse(content);
+        if (parsed.content) {
+            parsedContent = parsed.content;
+        }
+    } catch (e) {
+    }
+
+    const formatted = formatContent(parsedContent);
+    const aiContent = document.createElement("div");
+    aiContent.className = "chat-bubble ai";
+    aiContent.innerHTML = formatted;
+    resultDiv.appendChild(aiContent);
+    aiContent.scrollIntoView({behavior: "smooth"});
+}
 
 function fetchConversation(conversationId) {
     fetch(`/api/conversation/detail/${conversationId}`)
@@ -159,6 +183,7 @@ function fetchResult(query) {
             const contentHtml = formatContent(rawContent);
 
             resultDiv.removeChild(spinnerBubble);
+            renderAIResponse(rawContent);
 
             const aiContent = document.createElement("div");
             aiContent.className = "chat-bubble ai";
@@ -189,6 +214,8 @@ function formatContent(text) {
     content = content.replace(/^###\s(.+)$/gm, '<h3>$1</h3>');
     content = content.replace(/`([^`]+?)`/g, '<code class="inline">$1</code>');
     content = content.replace(/\[(.+?)\]\((.*?)\)/g, '<a href="$2" target="_blank" class="source-btn">$1</a>');
+    content = content.replace(/:\n-\s*/g, ':<br>• ');
+    content = content.replace(/(^|\n)-\s*/g, '$1• ');
     let isFirstBold = true;
     content = content.replace(/\*\*(.+?)\*\*/g, (match, text, offset, fullText) => {
         const before = fullText.slice(Math.max(0, offset - 40), offset);
