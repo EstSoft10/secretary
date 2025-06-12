@@ -89,4 +89,29 @@ public class ScheduleService {
 			.toList();
 	}
 
+	public List<ScheduleCountResponse> getWeeklySchedulesWithDetails(LocalDate start, LocalDate end, Member member) {
+		List<LocalDate> dates = start.datesUntil(end.plusDays(1)).collect(Collectors.toList());
+
+		return dates.stream()
+			.map(date -> {
+				LocalDateTime dayStart = date.atStartOfDay();
+				LocalDateTime dayEnd = date.atTime(LocalTime.MAX);
+
+				List<ScheduleResponse> scheduleList = scheduleRepository.findByMemberAndStartBetween(member, dayStart,
+						dayEnd)
+					.stream()
+					.map(ScheduleResponse::new)
+					.toList();
+
+				return new ScheduleCountResponse(date, scheduleList.size(), scheduleList);
+			})
+			.toList();
+	}
+
+	public ScheduleResponse getScheduleById(Long id, Member member) {
+		Schedule schedule = scheduleRepository.findByScheduleIdAndMember(id, member)
+			.orElseThrow(() -> new RuntimeException("일정을 찾을 수 없습니다."));
+		return new ScheduleResponse(schedule);
+	}
+
 }

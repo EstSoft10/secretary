@@ -100,4 +100,14 @@ public class ScheduleController {
 		return memberRepository.findByEmail(principal.getEmail())
 			.orElseThrow(() -> new RuntimeException("회원 정보를 찾을 수 없습니다."));
 	}
+
+	// 일정 단건 조회
+	@GetMapping("/{id}")
+	public ScheduleResponse getScheduleById(
+		@AuthenticationPrincipal CustomOAuth2User principal,
+		@PathVariable Long id) {
+		Member member = getMemberFromPrincipal(principal);
+		return scheduleService.getScheduleById(id, member);
+	}
+
 }

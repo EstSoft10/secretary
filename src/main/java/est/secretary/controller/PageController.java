@@ -15,4 +15,9 @@ public class PageController {
 	public String loginPage() {
 		return "login";
 	}
+
+	@GetMapping("/calendar")
+	public String schedulePage() {
+		return "calendar";
+	}
 }
