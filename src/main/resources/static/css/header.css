@@ -148,3 +148,37 @@ body.no-scroll {
     font-size: 18px;
     margin-bottom: 30px;
 }
+
+.title-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 220px;
+    gap: 10px;
+}
+
+.conversation-title {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-decoration: none;
+    color: black;
+    font-size: 14px;
+}
+
+.delete-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: #000000;
+    font-weight: bold;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+li:hover .delete-btn {
+    display: inline;
+}
+

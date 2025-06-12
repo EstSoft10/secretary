@@ -22,6 +22,7 @@
     </nav>
     <p id="user-id" sec:authorize="isAuthenticated()" th:text="${#authentication.principal.id}"
        style="display: none"></p>
+    <input type="hidden" name="_csrf" th:value="${_csrf.token}" id="csrfToken">
     <script th:inline="javascript">
         document.addEventListener("DOMContentLoaded", function () {
             window.toggleMenu = function (show) {
@@ -57,7 +58,12 @@
 
                         conversations.forEach(convo => {
                             const li = document.createElement("li");
-                            li.innerHTML = `<a href="/searchResult?conversationId=${convo.id}" onclick="location.href=this.href">${convo.title}</a>`;
+                            li.innerHTML = `
+                              <div class="title-wrapper">
+                                <a href="/searchResult?conversationId=${convo.id}" class="conversation-title">${convo.title}</a>
+                                <button class="delete-btn" data-id="${convo.id}">X</button>
+                              </div>
+                            `;
                             convoList.appendChild(li);
                         });
 
@@ -65,7 +71,37 @@
                         dateBlock.appendChild(convoList);
                         historyDiv.appendChild(dateBlock);
                     });
+                    setTimeout(() => {
+                        const deleteButtons = document.querySelectorAll(".delete-btn");
+                        const csrfToken = document.getElementById("csrfToken")?.value;
 
+                        deleteButtons.forEach(btn => {
+                            btn.addEventListener("click", (e) => {
+                                e.stopPropagation(); // 펼침 방지
+                                const conversationId = btn.dataset.id;
+                                const confirmDelete = confirm("정말 삭제하시겠습니까?");
+                                if (confirmDelete) {
+                                    fetch(`/api/conversation/${conversationId}`, {
+                                        method: "DELETE",
+                                        headers: {
+                                            "X-CSRF-TOKEN": csrfToken
+                                        }
+                                    })
+                                        .then(res => {
+                                            if (res.ok) {
+                                                alert("삭제되었습니다.");
+                                                btn.closest("li").remove();
+                                            } else {
+                                                alert("삭제에 실패했습니다.");
+                                            }
+                                        })
+                                        .catch(err => {
+                                            alert("오류 발생: " + err.message);
+                                        });
+                                }
+                            });
+                        });
+                    }, 0);
                 });
 
             function groupByDate(conversations) {
