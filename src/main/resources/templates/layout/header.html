@@ -1,3 +1,4 @@
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="ko">
 <header class="header" th:fragment="header">
     <div class="logo">
         <a th:href="@{/}">A:ssistant</a>
@@ -14,18 +15,20 @@
     </div>
     <nav id="sideMenu" class="side-menu">
         <div class="close-btn" onclick="toggleMenu(false)">✕</div>
-        <div class="conversation-history" id="conversationHistory">
+        <div th:if="${#authorization.expression('isAuthenticated()')}" class="conversation-history"
+             id="conversationHistory">
             <p th:text="${#authentication.principal.name + '님의 검색 기록'}" class="search-name"></p>
         </div>
     </nav>
+    <p id="user-id" sec:authorize="isAuthenticated()" th:text="${#authentication.principal.id}"
+       style="display: none"></p>
     <script th:inline="javascript">
         document.addEventListener("DOMContentLoaded", function () {
             window.toggleMenu = function (show) {
                 const menu = document.getElementById("sideMenu");
                 menu.style.display = show ? "block" : "none";
             };
-
-            const userId = [[${#authentication.principal.member.id}]];
+            const userId = document.getElementById('user-id').innerText;
             fetch(`/api/conversation/${userId}`)
                 .then(res => res.json())
                 .then(data => {

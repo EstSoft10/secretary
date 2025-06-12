@@ -75,7 +75,6 @@ body {
     background-color: #555;
 }
 
-
 .card-section {
     display: flex;
     flex-direction: column;
@@ -196,63 +195,101 @@ body {
     font-weight: 500;
 }
 
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0.7);
-    z-index: 9999;
-    display: none;
+.user-info-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+    font-size: 20px;
 }
 
-.spinner-container {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-}
-
-.spinner {
-    width: 60px;
-    height: 60px;
-    border: 6px solid #ccc;
-    border-top: 6px solid #333;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-.spinner-container p {
-    margin-top: 1rem;
-    font-weight: bold;
-    color: #333;
-}
-
-@keyframes blink {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.4;
-    }
-}
-
-.mic-blinking {
-    animation: blink 1s infinite;
-}
-
-.profile-image {
+.profile-thumb {
     width: 30px;
     height: 30px;
     border-radius: 50%;
     object-fit: cover;
+}
+
+.week-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.day-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease-in-out;
+    min-height: 120px;
+    text-align: center;
+}
+
+.day-label {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid #ddd;
+    width: 100%;
+    padding-bottom: 0.25rem;
+    text-align: center;
+}
+
+.schedule-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.schedule-item {
+    background-color: #f0f0f0;
+    padding: 5px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    line-height: 1.1;
+    width: 100%;
+    text-align: left;
+    color: #333;
+    border-left: none;
+    cursor: pointer;
+}
+
+.schedule-item div {
+    display: inline-block;
+    color: #555;
+    font-weight: 500;
+}
+
+.schedule-item.additional {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #777;
+    font-weight: 400;
+    width: 100%;
+}
+
+.no-schedule {
+    font-size: 0.85rem;
+    color: #999;
+    margin-top: 1rem;
+    text-align: center;
+    width: 100%;
+}
+
+.sunday {
+    color: #e53935;
+    font-weight: bold;
+}
+
+.saturday {
+    color: #1e88e5;
+    font-weight: bold;
 }

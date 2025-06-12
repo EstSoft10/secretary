@@ -1,254 +1,230 @@
-document.addEventListener('DOMContentLoaded', function () {
-    const calendarEl = document.getElementById('calendar');
-    const selectedDate = document.getElementById('selected-date');
-    const scheduleList = document.getElementById('schedule-list');
-    const modal = document.getElementById('schedule-modal');
-    const openModalBtn = document.getElementById('open-modal');
-    const closeModalBtn = document.querySelector('.close');
-    const scheduleForm = document.getElementById('schedule-form');
-    let currentSelectedDate = null;
-    let previouslySelectedCell = null;
-    const csrfToken = document.querySelector('input[name="_csrf"]').value; // _csrf.token의 실제 값이 들어있는 input의 value
+// calendar.js 전체 스크립트
 
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        locale: 'ko',
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: ''
-        },
-        events: function (fetchInfo, successCallback) {
-            const startParam = fetchInfo.startStr.split('+')[0];
-            const endParam = fetchInfo.endStr.split('+')[0];
+// DOM 요소 참조
+const calendarEl = document.getElementById('calendar');
+const modal = document.getElementById('schedule-modal');
+const scheduleForm = document.getElementById('schedule-form');
+const saveBtn = document.getElementById('save-btn');
+const editButtons = document.getElementById('edit-buttons');
+const updateBtn = document.getElementById('update-btn');
+const deleteBtn = document.getElementById('delete-btn');
+const csrfToken = document.querySelector('input[name="_csrf"]')?.value;
+const aiChatBtn = document.getElementById('ai-chatbot-btn');
 
-            const startDate = new Date(fetchInfo.start);
-            const endDate = new Date(fetchInfo.end);
-
-            const startYear = startDate.getFullYear();
-            const startMonth = startDate.getMonth() + 1;
-            const endYear = endDate.getFullYear();
-            const endMonth = endDate.getMonth() + 1;
-            const allEvents = [];
-
-            const scheduleFetch = Promise.all([
-                fetch(`/api/schedules?start=${startParam}&end=${endParam}`)
-                    .then(res => res.ok ? res.json() : Promise.reject("일정 조회 실패")),
-                fetch(`/api/schedules/counts?start=${startParam}&end=${endParam}`)
-                    .then(res => res.ok ? res.json() : Promise.reject("일정 count 실패"))
-            ]).then(([events, counts]) => {
-                (events || []).forEach(e => allEvents.push(e));
-                (counts || []).forEach(c => {
-                    allEvents.push({
-                        title: `${c.count}건`,
-                        start: c.date,
-                        allDay: true,
-                        display: 'background',
-                        backgroundColor: '#e3f2fd',
-                        textColor: '#0d47a1'
-                    });
-                });
-            });
-
-            const holidayFetches = [];
-            for (let y = startYear; y <= endYear; y++) {
-                const startM = y === startYear ? startMonth : 1;
-                const endM = y === endYear ? endMonth : 12;
-                for (let m = startM; m <= endM; m++) {
-                    holidayFetches.push(
-                        fetch(`/api/holidays?year=${y}&month=${m.toString().padStart(2, '0')}`)
-                            .then(res => res.ok ? res.json() : [])
-                            .then(holidays => {
-                                (holidays || []).forEach(h => {
-                                    allEvents.push({
-                                        title: h.title,
-                                        start: h.start,
-                                        allDay: true,
-                                        borderColor: '#ffccb6',
-                                        backgroundColor: '#ffccb6',
-                                        textColor: '#c00909'
-                                    });
-                                });
-                            })
-                    );
-                }
-            }
-
-            Promise.all([scheduleFetch, ...holidayFetches])
-                .then(() => successCallback(allEvents))
-                .catch(err => {
-                    console.error("캘린더 Events 로드 실패", err);
-                    successCallback([]);
-                });
-        },
-        dateClick: function (info) {
-            currentSelectedDate = info.dateStr;
-            selectedDate.innerText = info.dateStr;
-            loadSchedules(info.dateStr);
-
-            if (previouslySelectedCell) {
-                previouslySelectedCell.classList.remove('selected-date');
-            }
-            const cell = document.querySelector(`.fc-daygrid-day[data-date='${info.dateStr}']`);
-            if (cell) {
-                cell.classList.add('selected-date');
-                previouslySelectedCell = cell;
-            }
-        }
-    });
-
-    calendar.render();
-
-    const today = new Date().toISOString().slice(0, 10);
-    currentSelectedDate = today;
-    selectedDate.innerText = today;
-    const todayCell = document.querySelector(`.fc-daygrid-day[data-date='${today}']`);
-    if (todayCell) {
-        todayCell.classList.add('selected-date');
-        previouslySelectedCell = todayCell;
-    }
-    loadSchedules(today);
-
-    function loadSchedules(dateStr) {
-        fetch(`/api/schedules/day?date=${dateStr}`)
-            .then(res => res.json())
-            .then(data => {
-                scheduleList.innerHTML = '';
-                data.forEach(s => {
-                    const start = new Date(s.start)
-                        .toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-                    const end = s.end
-                        ? new Date(s.end)
-                            .toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})
-                        : '';
-                    const li = document.createElement('li');
-
-                    const hasLocation = !!s.location;
-                    const aiButton = hasLocation
-                        ? `<button class="ai-btn" data-location="${s.location}" data-title="${s.title}">이곳은 어때요?</button>`
-                        : '';
-
-                    li.innerHTML = `
-                    <div>
-                        <strong>${start}${end ? ' ~ ' + end : ''} ${hasLocation ? '(' + s.location + ')' : ''} ${s.title}</strong><br>
-                        <button class="edit-btn"   data-id="${s.scheduleId}">수정</button>
-                        <button class="delete-btn" data-id="${s.scheduleId}">삭제</button>
-                        ${aiButton}
-                    </div>
-                `;
-                    scheduleList.appendChild(li);
-                });
-            });
-    }
-
-    scheduleList.addEventListener('click', (e) => {
-        const target = e.target;
-        if (target.classList.contains('delete-btn')) {
-            const id = target.dataset.id;
-            if (!id) return;
-            if (confirm("일정을 삭제하시겠습니까?")) {
-                fetch(`/api/schedules/${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken
-                    }
-                })
-                    .then(res => {
-                        if (res.ok) {
-                            calendar.refetchEvents();
-                            loadSchedules(currentSelectedDate);
-                        } else {
-                            console.error("일정 삭제 실패", res.statusText);
-                        }
-                    });
-            }
-        } else if (target.classList.contains('edit-btn')) {
-            const id = target.dataset.id;
-            if (!id) return;
-            fetch(`/api/schedules/day?date=${currentSelectedDate}`)
-                .then(res => res.json())
-                .then(data => {
-                    const schedule = data.find(s => s.scheduleId == id);
-                    if (!schedule) return;
-                    scheduleForm.title.value = schedule.title;
-                    scheduleForm.content.value = schedule.content;
-                    scheduleForm.start.value = schedule.start.slice(0, 16);
-                    scheduleForm.end.value = schedule.end ? schedule.end.slice(0, 16) : '';
-                    scheduleForm.location.value = schedule.location;
-                    scheduleForm.querySelector('input[name="scheduleIdHidden"]').value = id;
-                    modal.classList.remove('hidden');
-                });
-        } else if (target.classList.contains('ai-btn')) {
-            const location = target.dataset.location;
-            const title = target.dataset.title;
-            if (location && title) {
-                const query = `${location} 근처에서 ${title} 하기 좋은 장소 추천해줘`;
-                const encodedQuery = encodeURIComponent(query);
-
-                fetch(`/ai/async-search?query=${encodedQuery}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        let conversationIdParam = '';
-                        if (data.conversationId !== undefined && data.conversationId !== null) {
-                            conversationIdParam = `&conversationId=${data.conversationId}`;
-                        }
-
-                        window.location.href = `/searchResult?query=${encodedQuery}${conversationIdParam}`;
-                    })
-            }
-        }
-    });
-
-    scheduleForm.addEventListener('submit', function handleFormSubmit(e) {
-        e.preventDefault();
-        if (!currentSelectedDate) return;
-
-        const formData = new FormData(scheduleForm);
-        const requestData = {};
-        formData.forEach((v, k) => requestData[k] = v);
-
-        if (requestData.end && new Date(requestData.end) <= new Date(requestData.start)) {
-            alert("종료 시간은 시작 시간 이후여야 합니다.");
-            return;
-        }
-
-        const scheduleId = requestData.scheduleIdHidden;
-        let url, method;
-        if (scheduleId) {
-            url = `/api/schedules/${scheduleId}`;
-            method = 'PUT';
-        } else {
-            url = '/api/schedules';
-            method = 'POST';
-        }
-
-        fetch(url, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken
-            },
-            body: JSON.stringify(requestData)
-        }).then(res => {
-            if (res.ok) {
-                modal.classList.add('hidden');
+// FullCalendar 초기화
+const calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    locale: 'ko',
+    headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'addScheduleButton'
+    },
+    customButtons: {
+        addScheduleButton: {
+            text: '일정 추가',
+            click: function () {
                 scheduleForm.reset();
-                calendar.refetchEvents();
-                loadSchedules(currentSelectedDate);
-            } else {
-                console.error("일정 저장/수정 실패", res.statusText);
+                document.getElementById('scheduleIdHidden').value = '';
+                saveBtn.classList.remove('hidden');
+                editButtons.classList.add('hidden');
+                modal.classList.remove('hidden');
             }
-        });
-    });
+        }
+    },
+    events: function (fetchInfo, successCallback) {
+        const start = fetchInfo.startStr.split('+')[0];
+        const end = fetchInfo.endStr.split('+')[0];
 
-    openModalBtn.addEventListener('click', () => {
+        const startDate = new Date(fetchInfo.start);
+        const endDate = new Date(fetchInfo.end);
+        const startYear = startDate.getFullYear();
+        const endYear = endDate.getFullYear();
+        const startMonth = startDate.getMonth() + 1;
+        const endMonth = endDate.getMonth() + 1;
+
+        const allEvents = [];
+
+        // 일정, 일정 카운트 불러오기
+        const scheduleFetch = Promise.all([
+            fetch(`/api/schedules?start=${start}&end=${end}`)
+                .then(res => res.ok ? res.json() : []),
+            fetch(`/api/schedules/counts?start=${start}&end=${end}`)
+                .then(res => res.ok ? res.json() : [])
+        ]).then(([events, counts]) => {
+            events.forEach(e => allEvents.push(e));
+            counts.forEach(c => {
+                allEvents.push({
+                    title: `${c.count}건`,
+                    start: c.date,
+                    allDay: true,
+                    display: 'background',
+                    backgroundColor: '#e3f2fd',
+                    textColor: '#0d47a1'
+                });
+            });
+        });
+
+        // 공휴일 불러오기
+        const holidayFetches = [];
+        for (let y = startYear; y <= endYear; y++) {
+            const startM = y === startYear ? startMonth : 1;
+            const endM = y === endYear ? endMonth : 12;
+            for (let m = startM; m <= endM; m++) {
+                holidayFetches.push(
+                    fetch(`/api/holidays?year=${y}&month=${m.toString().padStart(2, '0')}`)
+                        .then(res => res.ok ? res.json() : [])
+                        .then(holidays => {
+                            holidays.forEach(h => {
+                                allEvents.push({
+                                    title: h.title,
+                                    start: h.start,
+                                    allDay: true,
+                                    borderColor: '#ffcccc',
+                                    backgroundColor: '#ffcccc',
+                                    textColor: '#c00909'
+                                });
+
+                                const dateCell = document.querySelector(`.fc-daygrid-day[data-date='${h.start}'] .fc-daygrid-day-number`);
+                                if (dateCell) {
+                                    dateCell.style.color = '#e53935';
+                                }
+                            });
+                        })
+                );
+            }
+        }
+
+        Promise.all([scheduleFetch, ...holidayFetches])
+            .then(() => successCallback(allEvents))
+            .catch(err => {
+                console.error("이벤트 로드 실패", err);
+                successCallback([]);
+            });
+    },
+    eventClick: function (info) {
+        const event = info.event;
+        if (!event.extendedProps || !event.extendedProps.scheduleId) return;
+
+        const id = event.extendedProps.scheduleId;
+        fetch(`/api/schedules/${id}`)
+            .then(res => res.ok ? res.json() : Promise.reject("조회 실패"))
+            .then(schedule => {
+                if (!schedule) return;
+                scheduleForm.reset();
+                scheduleForm.title.value = schedule.title;
+                scheduleForm.content.value = schedule.content;
+                scheduleForm.start.value = schedule.start.slice(0, 16);
+                scheduleForm.end.value = schedule.end ? schedule.end.slice(0, 16) : '';
+                scheduleForm.location.value = schedule.location;
+                scheduleForm.scheduleIdHidden.value = id;
+                saveBtn.classList.add('hidden');
+                editButtons.classList.remove('hidden');
+                modal.classList.remove('hidden');
+            })
+            .catch(console.error);
+    },
+    dayCellDidMount: function (arg) {
+        const day = arg.date.getDay();
+        const numberEl = arg.el.querySelector('.fc-daygrid-day-number');
+        if (day === 0) {
+            if (numberEl) numberEl.style.color = '#e53935';
+        } else if (day === 6) {
+            if (numberEl) numberEl.style.color = '#1e88e5';
+        }
+    },
+    dayHeaderDidMount: function (arg) {
+        if (arg.el.innerText === '일') {
+            arg.el.style.color = '#e53935';
+        } else if (arg.el.innerText === '토') {
+            arg.el.style.color = '#1e88e5';
+        }
+    }
+});
+
+calendar.render();
+
+// 일정 추가 버튼 동작
+const openBtn = document.getElementById('open-modal');
+if (openBtn) {
+    openBtn.addEventListener('click', () => {
         scheduleForm.reset();
-        scheduleForm.querySelector('input[name="scheduleIdHidden"]').value = '';
+        scheduleForm.scheduleIdHidden.value = '';
+        saveBtn.classList.remove('hidden');
+        editButtons.classList.add('hidden');
         modal.classList.remove('hidden');
     });
+}
 
-    closeModalBtn.addEventListener('click', () => {
+// 닫기 버튼
+const closeBtn = document.querySelector('.close');
+if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
         modal.classList.add('hidden');
     });
+}
 
+// 일정 저장 (신규)
+scheduleForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(scheduleForm));
+    const url = data.scheduleIdHidden ? `/api/schedules/${data.scheduleIdHidden}` : '/api/schedules';
+    const method = data.scheduleIdHidden ? 'PUT' : 'POST';
+
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
+        },
+        body: JSON.stringify(data)
+    }).then(res => {
+        if (res.ok) {
+            modal.classList.add('hidden');
+            scheduleForm.reset();
+            calendar.refetchEvents();
+        }
+    });
+});
+
+// 일정 수정
+updateBtn?.addEventListener('click', () => {
+    const data = Object.fromEntries(new FormData(scheduleForm));
+    const id = data.scheduleIdHidden;
+    if (!id) return;
+
+    fetch(`/api/schedules/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
+        },
+        body: JSON.stringify(data)
+    }).then(res => {
+        if (res.ok) {
+            modal.classList.add('hidden');
+            scheduleForm.reset();
+            calendar.refetchEvents();
+        }
+    });
+});
+
+// 일정 삭제
+deleteBtn?.addEventListener('click', () => {
+    const id = scheduleForm.scheduleIdHidden.value;
+    if (!id) return;
+    if (!confirm('일정을 삭제하시겠습니까?')) return;
+
+    fetch(`/api/schedules/${id}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': csrfToken
+        }
+    }).then(res => {
+        if (res.ok) {
+            modal.classList.add('hidden');
+            scheduleForm.reset();
+            calendar.refetchEvents();
+        }
+    });
 });
