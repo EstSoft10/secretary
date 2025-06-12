@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import est.secretary.domain.Member;
 import est.secretary.domain.Schedule;
 import est.secretary.dto.ScheduleCountResponse;
 import est.secretary.dto.ScheduleRequest;
@@ -15,8 +16,6 @@ import est.secretary.dto.ScheduleResponse;
 import est.secretary.repository.ScheduleRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-
-import est.secretary.domain.Member;
 
 @RequiredArgsConstructor
 @Service

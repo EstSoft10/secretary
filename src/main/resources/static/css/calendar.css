@@ -11,7 +11,7 @@ body {
 }
 
 #calendar {
-    flext: 2;
+    flex: 2;
     width: 800px;
     height: 600px;
 }
