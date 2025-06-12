@@ -78,5 +78,4 @@ public class CustomOAuth2User implements OAuth2User, UserDetails {
 	public boolean isEnabled() {
 		return true;
 	}
-
 }
