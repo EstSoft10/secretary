@@ -50,6 +50,10 @@ public class CustomOAuth2User implements OAuth2User, UserDetails {
 		return member.getId();
 	}
 
+	public String getEmail() {
+		return member.getEmail();
+	}
+
 	@Override
 	public String getUsername() {
 		return member.getEmail();

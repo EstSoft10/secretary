@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const scheduleForm = document.getElementById('schedule-form');
     let currentSelectedDate = null;
     let previouslySelectedCell = null;
+    const csrfToken = document.querySelector('input[name="_csrf"]').value; // _csrf.token의 실제 값이 들어있는 input의 value
 
     const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
@@ -146,11 +147,18 @@ document.addEventListener('DOMContentLoaded', function () {
             const id = target.dataset.id;
             if (!id) return;
             if (confirm("일정을 삭제하시겠습니까?")) {
-                fetch(`/api/schedules/${id}`, {method: 'DELETE'})
+                fetch(`/api/schedules/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken
+                    }
+                })
                     .then(res => {
                         if (res.ok) {
                             calendar.refetchEvents();
                             loadSchedules(currentSelectedDate);
+                        } else {
+                            console.error("일정 삭제 실패", res.statusText);
                         }
                     });
             }
@@ -180,8 +188,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 fetch(`/ai/async-search?query=${encodedQuery}`)
                     .then(res => res.json())
                     .then(data => {
-                        window.location.href = `/searchResult?query=${encodedQuery}&conversationId=${data.conversationId}`;
-                    });
+                        let conversationIdParam = '';
+                        if (data.conversationId !== undefined && data.conversationId !== null) {
+                            conversationIdParam = `&conversationId=${data.conversationId}`;
+                        }
+
+                        window.location.href = `/searchResult?query=${encodedQuery}${conversationIdParam}`;
+                    })
             }
         }
     });
@@ -211,7 +224,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         fetch(url, {
             method: method,
-            headers: {'Content-Type': 'application/json'},
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
             body: JSON.stringify(requestData)
         }).then(res => {
             if (res.ok) {
@@ -219,6 +235,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 scheduleForm.reset();
                 calendar.refetchEvents();
                 loadSchedules(currentSelectedDate);
+            } else {
+                console.error("일정 저장/수정 실패", res.statusText);
             }
         });
     });
