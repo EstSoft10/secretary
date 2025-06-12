@@ -18,6 +18,15 @@
         <div id="calendar"></div>
     </div>
 
+    <div class="sync-calendar" id="sync-calendar">
+        <form id="ics-upload-form" th:action="@{/schedule/import}" method="post" enctype="multipart/form-data">
+            <input type="file" id="icsFile" name="icsFile" accept=".ics" style="display: none">
+            <button type="button" class="btn-common" onclick="document.getElementById('icsFile').click()">가져오기</button>
+        </form>
+
+        <button type="button" class="btn-common" onclick="openExportModal()">내보내기</button>
+    </div>
+
     <div th:replace="~{layout/footer :: footer}"></div>
 </main>
 
@@ -41,8 +50,23 @@
         </form>
     </div>
 </div>
+<div class="modal hidden" id="export-modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeExportModal()">&times;</span>
+        <form id="export-form">
+            <label for="email">받을 이메일 주소</label>
+            <input type="email" name="email" id="email" required placeholder="example@email.com">
+            <button type="submit" class="btn-common">전송</button>
+            <div id="loading-message" class="hidden">
+                <div class="spinner"></div>
+                <p>메일 전송 중입니다...</p>
+            </div>
+        </form>
 
-<button id="ai-chatbot-btn" class="chatbot-btn">말풍선</button>
+    </div>
+</div>
+
+<button id="ai-chatbot-btn" class="chatbot-btn">+</button>
 <div id="chat-popup" class="chat-popup hidden">
     <div class="chat-header">AI 비서</div>
     <div class="chat-body" id="chat-body"></div>
