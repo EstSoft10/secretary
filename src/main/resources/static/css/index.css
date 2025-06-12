@@ -218,6 +218,11 @@ body {
     margin-bottom: 1rem;
 }
 
+.day-cell:hover {
+    transform: translateY(-3px);
+    cursor: pointer;
+}
+
 .day-cell {
     display: flex;
     flex-direction: column;

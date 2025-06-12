@@ -228,3 +228,56 @@ deleteBtn?.addEventListener('click', () => {
         }
     });
 });
+
+function openExportModal() {
+    document.getElementById('export-modal').classList.remove('hidden');
+}
+
+function closeExportModal() {
+    document.getElementById('export-modal').classList.add('hidden');
+}
+
+document.getElementById('export-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const email = document.getElementById('email').value;
+    const csrfToken = document.querySelector('input[name="_csrf"]').value;
+
+    // UI 처리
+    document.querySelector('button[type="submit"]').disabled = true;
+    document.getElementById('loading-message').classList.remove('hidden');
+
+    fetch('/schedule/export', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRF-TOKEN': csrfToken
+        },
+        body: new URLSearchParams({email})
+    })
+        .then(res => res.text())
+        .then(result => {
+            if (result === 'ok') {
+                alert('메일 전송 요청 완료! 메일함을 확인하세요.');
+                closeExportModal();
+            } else {
+                alert('메일 전송 중 문제가 발생했습니다.');
+            }
+        })
+        .catch(() => alert('네트워크 오류가 발생했습니다.'))
+        .finally(() => {
+            document.querySelector('button[type="submit"]').disabled = false;
+            document.getElementById('loading-message').classList.add('hidden');
+        });
+});
+
+document.getElementById('icsFile').addEventListener('change', function () {
+    if (this.files.length > 0) {
+        const confirmed = confirm('ICS 파일의 일정을 등록하시겠습니까?');
+        if (confirmed) {
+            document.getElementById('ics-upload-form').submit();
+        } else {
+            this.value = '';
+        }
+    }
+});

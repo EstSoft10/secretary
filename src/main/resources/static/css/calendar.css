@@ -3,18 +3,11 @@ body {
     justify-content: center;
 }
 
-.container {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    padding-top: 50px;
-}
-
 #calendar {
     flex: 2;
     width: 800px;
     height: 600px;
-    margin-top: 60px; /* 캘린더 상단 여백 */
+    margin-top: 60px;
     margin-bottom: 40px;
 }
 
@@ -285,4 +278,93 @@ textarea {
 
 .hidden {
     display: none !important;
+}
+
+.btn-common {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 120px;
+    height: 40px;
+    padding: 0;
+    font-size: 14px;
+    border: none;
+    border-radius: 8px;
+    background-color: #626262;
+    color: white;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease;
+    box-sizing: border-box;
+}
+
+.btn-common:hover {
+    background-color: #e1e1e1;
+}
+
+.sync-calendar {
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+    margin-top: -10px;
+    width: 800px;
+}
+
+#export-modal .modal-content {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    width: 400px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    position: relative;
+    text-align: center;
+}
+
+#export-modal label {
+    font-weight: bold;
+    margin-bottom: 10px;
+    display: block;
+    font-size: 1rem;
+}
+
+#export-modal input[type="email"] {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    margin-top: 5px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+}
+
+#loading-message {
+    margin-top: 15px;
+    font-size: 0.9rem;
+    color: #555;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+#loading-message.hidden {
+    display: none;
+}
+
+.spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid #ccc;
+    border-top: 3px solid #2e8b57;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }

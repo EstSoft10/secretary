@@ -37,6 +37,8 @@ dependencies {
     implementation 'io.projectreactor.netty:reactor-netty-http'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+    implementation 'net.sf.biweekly:biweekly:0.6.6'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
     testImplementation 'org.springframework.security:spring-security-test'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'

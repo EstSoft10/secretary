@@ -1,19 +1,33 @@
 package est.secretary.service;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import biweekly.Biweekly;
+import biweekly.ICalendar;
+import biweekly.component.VEvent;
 import est.secretary.domain.Member;
 import est.secretary.domain.Schedule;
 import est.secretary.dto.ScheduleCountResponse;
 import est.secretary.dto.ScheduleRequest;
 import est.secretary.dto.ScheduleResponse;
+import est.secretary.repository.MemberRepository;
 import est.secretary.repository.ScheduleRepository;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -22,6 +36,8 @@ import lombok.RequiredArgsConstructor;
 public class ScheduleService {
 
 	private final ScheduleRepository scheduleRepository;
+	private final MemberRepository memberRepository;
+	private final JavaMailSender mailSender;
 
 	@Transactional
 	public void saveSchedule(ScheduleRequest request, Member member) {
@@ -114,4 +130,78 @@ public class ScheduleService {
 		return new ScheduleResponse(schedule);
 	}
 
+	@Transactional
+	public void importFromIcs(MultipartFile icsFile, Long userId) {
+		try (InputStream in = icsFile.getInputStream()) {
+			var calendar = Biweekly.parse(in).first();
+
+			if (calendar == null || calendar.getEvents().isEmpty()) {
+				throw new IllegalArgumentException("ICS 파일에 일정 정보가 없습니다.");
+			}
+
+			Member member = memberRepository.findById(userId)
+				.orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+			for (VEvent event : calendar.getEvents()) {
+				String title = event.getSummary() != null ? event.getSummary().getValue() : "제목 없음";
+				String location = event.getLocation() != null ? event.getLocation().getValue() : "";
+				String description = event.getDescription() != null ? event.getDescription().getValue() : "";
+
+				Instant startInstant = event.getDateStart().getValue().toInstant();
+				Instant endInstant = event.getDateEnd() != null
+					? event.getDateEnd().getValue().toInstant()
+					: startInstant.plusSeconds(3600);
+
+				Schedule schedule = Schedule.builder()
+					.member(member)
+					.title(title)
+					.content(description)
+					.start(LocalDateTime.ofInstant(startInstant, ZoneId.systemDefault()))
+					.end(LocalDateTime.ofInstant(endInstant, ZoneId.systemDefault()))
+					.location(location)
+					.build();
+
+				scheduleRepository.save(schedule);
+			}
+
+		} catch (Exception e) {
+			throw new RuntimeException("ICS 파일 처리 중 오류 발생", e);
+		}
+	}
+
+	@Async
+	public void exportToIcsAndSendMail(String email, Member member) {
+		List<Schedule> schedules = scheduleRepository.findByMember(member);
+
+		ICalendar ical = new ICalendar();
+		ical.setProductId("-//Assistant Calendar//iCal4j//EN");
+
+		for (Schedule s : schedules) {
+			VEvent event = new VEvent();
+			event.setSummary(s.getTitle());
+			event.setDescription(s.getContent());
+			event.setDateStart(java.util.Date.from(s.getStart().atZone(ZoneId.systemDefault()).toInstant()));
+			event.setDateEnd(java.util.Date.from(s.getEnd().atZone(ZoneId.systemDefault()).toInstant()));
+			event.setLocation(s.getLocation());
+			ical.addEvent(event);
+		}
+
+		try {
+			File file = File.createTempFile("schedule_", ".ics");
+			try (FileOutputStream fos = new FileOutputStream(file)) {
+				Biweekly.write(ical).go(fos);
+			}
+
+			MimeMessage message = mailSender.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(message, true);
+			helper.setTo(email);
+			helper.setSubject("A:ssistant 일정 내보내기");
+			helper.setText("첨부된 .ics 파일을 통해 일정을 동기화하세요!");
+			helper.addAttachment("schedule.ics", file);
+			mailSender.send(message);
+
+		} catch (Exception e) {
+			throw new RuntimeException("이메일 전송 실패", e);
+		}
+	}
 }
