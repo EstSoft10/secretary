@@ -183,7 +183,6 @@ function fetchResult(query) {
             const contentHtml = formatContent(rawContent);
 
             resultDiv.removeChild(spinnerBubble);
-            renderAIResponse(rawContent);
 
             const aiContent = document.createElement("div");
             aiContent.className = "chat-bubble ai";
