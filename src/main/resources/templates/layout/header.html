@@ -1,0 +1,120 @@
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="ko">
+<header class="header" th:fragment="header">
+    <div class="logo">
+        <a th:href="@{/}">A:ssistant</a>
+    </div>
+    <div th:if="${#authentication != null or #authentication.authenticated}" class="side-menu-user-info">
+
+        <form th:action="@{/logout}" method="post" class="logout-form">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="logout-btn">로그아웃</button>
+        </form>
+    </div>
+    <div class="hamburger" id="hamburger" onclick="toggleMenu(true)">
+        &#9776;
+    </div>
+    <nav id="sideMenu" class="side-menu">
+        <div class="close-btn" onclick="toggleMenu(false)">✕</div>
+        <div th:if="${#authorization.expression('isAuthenticated()')}" class="conversation-history"
+             id="conversationHistory">
+            <p th:text="${#authentication.principal.name + '님의 검색 기록'}" class="search-name"></p>
+        </div>
+    </nav>
+    <p id="user-id" sec:authorize="isAuthenticated()" th:text="${#authentication.principal.id}"
+       style="display: none"></p>
+    <input type="hidden" name="_csrf" th:value="${_csrf.token}" id="csrfToken">
+    <script th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", function () {
+            window.toggleMenu = function (show) {
+                const menu = document.getElementById("sideMenu");
+                menu.style.display = show ? "block" : "none";
+            };
+            const userId = document.getElementById('user-id').innerText;
+            fetch(`/api/conversation/${userId}`)
+                .then(res => res.json())
+                .then(data => {
+                    const historyDiv = document.getElementById("conversationHistory");
+                    if (!historyDiv) {
+                        console.error("conversationHistory 요소가 없습니다!");
+                        return;
+                    }
+
+                    const grouped = groupByDate(data);
+                    Object.entries(grouped).forEach(([date, conversations], index) => {
+                        const dateBlock = document.createElement("div");
+                        dateBlock.className = "date-group";
+
+                        const dateHeader = document.createElement("div");
+                        dateHeader.className = "date-header";
+                        dateHeader.innerHTML = `<span class="arrow">▶</span> ${date}`;
+
+                        const convoList = document.createElement("ul");
+                        convoList.className = "conversation-list hidden";
+                        dateHeader.addEventListener("click", () => {
+                            convoList.classList.toggle("hidden");
+                            const arrow = dateHeader.querySelector(".arrow");
+                            arrow.textContent = convoList.classList.contains("hidden") ? "▶" : "▼";
+                        });
+
+                        conversations.forEach(convo => {
+                            const li = document.createElement("li");
+                            li.innerHTML = `
+                              <div class="title-wrapper">
+                                <a href="/searchResult?conversationId=${convo.id}" class="conversation-title">${convo.title}</a>
+                                <button class="delete-btn" data-id="${convo.id}">X</button>
+                              </div>
+                            `;
+                            convoList.appendChild(li);
+                        });
+
+                        dateBlock.appendChild(dateHeader);
+                        dateBlock.appendChild(convoList);
+                        historyDiv.appendChild(dateBlock);
+                    });
+                    setTimeout(() => {
+                        const deleteButtons = document.querySelectorAll(".delete-btn");
+                        const csrfToken = document.getElementById("csrfToken")?.value;
+
+                        deleteButtons.forEach(btn => {
+                            btn.addEventListener("click", (e) => {
+                                e.stopPropagation(); // 펼침 방지
+                                const conversationId = btn.dataset.id;
+                                const confirmDelete = confirm("정말 삭제하시겠습니까?");
+                                if (confirmDelete) {
+                                    fetch(`/api/conversation/${conversationId}`, {
+                                        method: "DELETE",
+                                        headers: {
+                                            "X-CSRF-TOKEN": csrfToken
+                                        }
+                                    })
+                                        .then(res => {
+                                            if (res.ok) {
+                                                alert("삭제되었습니다.");
+                                                btn.closest("li").remove();
+                                            } else {
+                                                alert("삭제에 실패했습니다.");
+                                            }
+                                        })
+                                        .catch(err => {
+                                            alert("오류 발생: " + err.message);
+                                        });
+                                }
+                            });
+                        });
+                    }, 0);
+                });
+
+            function groupByDate(conversations) {
+                const grouped = {};
+                conversations.forEach(c => {
+                    const date = new Date(c.updatedAt).toISOString().split("T")[0];
+                    if (!grouped[date]) grouped[date] = [];
+                    grouped[date].push(c);
+                });
+                return grouped;
+            }
+        });
+
+
+    </script>
+</header>
