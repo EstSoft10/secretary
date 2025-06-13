@@ -64,6 +64,8 @@ function fetchConversation(conversationId) {
     fetch(`/api/conversation/detail/${conversationId}`)
         .then(res => res.json())
         .then(messages => {
+            let lastBubble = null;
+
             messages.forEach(msg => {
                 const bubble = document.createElement("div");
                 bubble.className = `chat-bubble ${msg.sender === "USER" ? "user" : "ai"}`;
@@ -83,10 +85,14 @@ function fetchConversation(conversationId) {
                 }
 
                 resultDiv.appendChild(bubble);
+                lastBubble = bubble;
             });
-            resultDiv.scrollTop = resultDiv.scrollHeight;
+
+            if (lastBubble) {
+                lastBubble.scrollIntoView({behavior: "smooth"});
+            }
         })
-        .catch(err => alert("❌ 대화 불러오기 오류: " + err));
+        .catch(err => alert("대화 불러오기 오류: " + err));
 }
 
 
