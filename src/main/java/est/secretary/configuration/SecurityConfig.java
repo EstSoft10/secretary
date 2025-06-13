@@ -20,7 +20,7 @@ public class SecurityConfig {
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/", "/login", "/css/**", "/js/**", "/images/**", "/api/**").permitAll()
+				.requestMatchers("/css/**", "/js/**", "/images/**", "/json/**", "/login").permitAll()
 				.anyRequest().authenticated()
 			)
 			.oauth2Login(oauth2 -> oauth2

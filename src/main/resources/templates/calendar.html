@@ -13,11 +13,9 @@
 <body>
 <main class="main-container">
     <div th:replace="~{layout/header :: header}"></div>
-
     <div id="calendar-header">
         <div id="calendar"></div>
     </div>
-
     <div class="sync-calendar" id="sync-calendar">
         <form id="ics-upload-form" th:action="@{/schedule/import}" method="post" enctype="multipart/form-data">
             <input type="file" id="icsFile" name="icsFile" accept=".ics" style="display: none">
@@ -26,10 +24,8 @@
 
         <button type="button" class="btn-common" onclick="openExportModal()">내보내기</button>
     </div>
-
     <div th:replace="~{layout/footer :: footer}"></div>
 </main>
-
 <!-- 일정 추가 모달 -->
 <div class="modal hidden" id="schedule-modal">
     <div class="modal-content">
@@ -65,13 +61,16 @@
 
     </div>
 </div>
-
-<button id="ai-chatbot-btn" class="chatbot-btn">+</button>
+<button id="ai-chatbot-btn" class="chatbot-btn" style="display: none;">+</button>
 <div id="chat-popup" class="chat-popup hidden">
     <div class="chat-header">AI 비서</div>
     <div class="chat-body" id="chat-body"></div>
+    <div class="chat-input-wrapper">
+        <input type="text" id="chat-input" placeholder="무엇을 도와드릴까요?">
+        <button type="button" onclick="sendCustomQuestion()">▶</button>
+    </div>
 </div>
-
+<div id="chat-suggestion-container" class="chat-suggestion-container hidden"></div>
 <script src="/js/calendar.js"></script>
 </body>
 </html>
