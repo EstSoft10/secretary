@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>로그인</title>
+    <link rel="stylesheet" th:href="@{/css/login.css}">
+</head>
+<body>
+<div class="login-container">
+    <h1 class="logo">A:ssistant</h1>
+    <div class="login-buttons">
+        <a href="/oauth2/authorization/naver" class="login-btn naver-btn">
+            <img src="/images/naver.png" class="icon" alt="naver">네이버 로그인
+        </a>
+        <a href="/oauth2/authorization/kakao" class="login-btn kakao-btn">
+            <img src="/images/kakao.png" class="icon" alt="kakao">카카오 로그인
+        </a>
+        <a href="/oauth2/authorization/google" class="login-btn google-btn">
+            <img src="/images/google.png" class="icon" alt="google">Google 로그인
+        </a>
+    </div>
+</div>
+</body>
+</html>

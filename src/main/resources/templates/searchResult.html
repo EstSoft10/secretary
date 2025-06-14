@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>AI 응답</title>
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link rel="stylesheet" th:href="@{/css/index.css}"/>
+    <link rel="stylesheet" th:href="@{/css/searchResult.css}">
+</head>
+<body>
+<main class="main-container">
+    <div th:replace="~{layout/header :: header}"></div>
+    <div class="chat-wrapper" id="result" th:data-result="${result}"></div>
+    <section class="search-box">
+        <form class="search-form" id="search-form">
+            <input type="text" name="query" placeholder="앨런에게 물어보세요!" required/>
+            <button type="submit">검색</button>
+        </form>
+    </section>
+</main>
+<div th:replace="~{layout/footer :: footer}"></div>
+<script src="/js/searchResult.js"></script>
+</body>
+</html>

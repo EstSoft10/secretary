@@ -1,10 +1,92 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>A:ssistant</title>
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link rel="stylesheet" th:href="@{/css/index.css}"/>
+    <script src="/js/index.js"></script>
 </head>
 <body>
-test
+<main class="main-container">
+    <div th:replace="~{layout/header :: header}"></div>
+    <div class="content-wrapper">
+
+        <section class="weekly-calendar full-view">
+            <div class="user-info-row">
+                <img th:src="${profileImage}" alt="프로필 이미지" class="profile-thumb">
+                <p><strong th:text="${userName + '님의 일주일 간 일정'}" class="title-calendar"></strong></p>
+            </div>
+            <div class="week-grid">
+                <div class="day-cell" th:each="day : ${weekSchedules}" th:onclick="|location.href='/calendar'|">
+                    <p class="day-label"
+                       th:classappend="${#temporals.format(day.date, 'E', T(java.util.Locale).KOREAN) == '일' ? 'sunday' :
+                    (#temporals.format(day.date, 'E', T(java.util.Locale).KOREAN) == '토' ? 'saturday' : '')}"
+                       th:text="${#temporals.format(day.date, 'M/d (E)', T(java.util.Locale).KOREAN)}">
+                    </p>
+                    <div class="schedule-list">
+                        <div th:if="${!#lists.isEmpty(day.schedules)}" class="schedule-item">
+                            <strong th:text="${day.schedules[0].title}"></strong>
+                            <div th:text="${#temporals.format(day.schedules[0].start, 'HH:mm')} + ' ~ ' + ${#temporals.format(day.schedules[0].end, 'HH:mm')}"></div>
+                            <div th:text="${day.schedules[0].location}"></div>
+                        </div>
+                        <div th:if="${#lists.size(day.schedules) > 1}" class="schedule-item additional">
+                            <span th:text="'외 ' + (${#lists.size(day.schedules)} - 1) + '건'"></span>
+                        </div>
+                        <div th:if="${#lists.isEmpty(day.schedules)}" class="no-schedule">일정 없음</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!--        <section class="memo-pad">-->
+        <!--            <textarea placeholder="오늘의 메모를 적어보세요..." class="memo-textarea"></textarea>-->
+        <!--            <button class="memo-edit-btn" title="수정">✏️</button>-->
+        <!--        </section>-->
+
+        <section class="search-box">
+            <form class="search-form" th:action="@{/api/search}" method="get">
+                <input type="text" name="query" placeholder="앨런에게 물어보세요!" required/>
+                <input name="userId" sec:authorize="isAuthenticated()" th:value="${#authentication.principal.id}"
+                       type="hidden">
+                <button type="submit">검색</button>
+                <button type="button" onclick="startSpeech()" title="음성으로 검색">🎤</button>
+            </form>
+        </section>
+
+        <section class="card-section">
+            <div class="card-row">
+                <div class="card wide-card youtube-card">
+                    <p>🎬 유튜브 영상 요약해줘</p>
+                    <form id="youtubeForm" class="youtube-form">
+                        <input type="text" id="youtubeInput" name="query" placeholder="유튜브 링크를 붙여넣어 주세요" required/>
+                        <button type="submit">요약</button>
+                    </form>
+                    <div id="result" style="margin-top: 1rem; white-space: pre-wrap; color: #333;"></div>
+                </div>
+
+                <div class="card small-card" id="weather-card">
+                    <div id="weather-location" class="weather-location"></div>
+                    <div id="weather-time" class="weather-time"></div>
+                    <div class="weather-info">
+                        <img id="weather-icon"/>
+                        <span id="weather-text"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-row">
+                <div th:each="prompt : ${promptList}" class="card small-card" th:attr="data-query=${prompt.text}">
+                    <p>
+                        <span th:text="${prompt.icon}"></span>
+                        <span th:text="${prompt.text}"></span>
+                    </p>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+<div th:replace="~{layout/footer :: footer}"></div>
 </body>
 </html>
