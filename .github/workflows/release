@@ -1,0 +1,47 @@
+name: CI/CD - Release Branch Deploy to EC2
+
+on:
+  push:
+    branches:
+      - release
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      JASYPT_ENCRYPTOR_PASSWORD: ${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }}
+
+    steps:
+      - name: ✅ Checkout source code
+        uses: actions/checkout@v4
+
+      - name: ☕ Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: 🛠 Build with Gradle (no tests)
+        run: ./gradlew clean build -x test
+
+      - name: 🔐 Decode SSH private key
+        run: echo "${{ secrets.KEY }}" | base64 -d > private_key.pem
+
+      - name: 🔑 Set SSH permissions
+        run: chmod 600 private_key.pem
+
+      - name: 📦 Upload jar to EC2
+        run: |
+          scp -i private_key.pem -o StrictHostKeyChecking=no \
+            build/libs/*.jar \
+            ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/${{ secrets.USERNAME }}/app.jar
+
+      - name: 🚀 Restart Spring Boot app on EC2
+        run: |
+          ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ secrets.HOST }} << EOF
+            echo "🔄 Stopping existing app process (if any)..."
+            pkill -f 'java.*app.jar' || true
+            echo "✅ Starting new Spring Boot app..."
+            nohup java -Djasypt.encryptor.password=${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }} -jar /home/${{ secrets.USERNAME }}/app.jar > app.log 2>&1 &
+          EOF
