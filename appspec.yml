@@ -1,0 +1,21 @@
+version: 0.0
+os: linux
+
+files:
+  - source: /
+    destination: /home/ec2-user/app
+    overwrite: yes
+
+hooks:
+  ApplicationStop:
+    - location: scripts/stop.sh
+      timeout: 20
+      runas: ec2-user
+
+  AfterInstall:
+    - location: scripts/start.sh
+      timeout: 20
+      runas: ec2-user
+      env:
+        variables:
+          JASYPT_ENCRYPTOR_PASSWORD: "{{JASYPT_ENCRYPTOR_PASSWORD}}"
