@@ -33,7 +33,7 @@ jobs:
           mkdir -p deploy
           cp appspec.yml deploy/
           cp -r scripts/ deploy/
-          cp build/libs/*SNAPSHOT.jar deploy/app.jar
+          cp build/libs/*.jar deploy/
           cd deploy && zip -r app.zip .
 
       - name: ☁️ Upload to S3
@@ -43,13 +43,6 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ap-northeast-2
-
-      - name: 🧪 Export JASYPT_SECRET to EC2
-        run: |
-          ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ secrets.HOST }} << EOF
-            echo "export JASYPT_ENCRYPTOR_PASSWORD=${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }}" >> ~/.bash_profile
-            source ~/.bash_profile
-          EOF
 
       - name: 🚀 Deploy with CodeDeploy
         run: |
