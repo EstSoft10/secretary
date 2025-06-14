@@ -9,9 +9,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    env:
-      JASYPT_ENCRYPTOR_PASSWORD: ${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }}
-
     steps:
       - name: ✅ Checkout source code v3
         uses: actions/checkout@v4
@@ -33,7 +30,7 @@ jobs:
           mkdir -p deploy
           cp appspec.yml deploy/
           cp -r scripts/ deploy/
-          cp build/libs/*.jar deploy/
+          cp build/libs/*SNAPSHOT.jar deploy/app.jar
           cd deploy && zip -r app.zip .
 
       - name: ☁️ Upload to S3
