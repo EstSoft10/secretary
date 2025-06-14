@@ -1,4 +1,4 @@
-name: CI/CD - Release Branch Deploy to EC2
+name: CI/CD - Release Branch Deploy with CodeDeploy
 
 on:
   push:
@@ -6,11 +6,8 @@ on:
       - release
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
-
-    env:
-      JASYPT_ENCRYPTOR_PASSWORD: ${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }}
 
     steps:
       - name: ✅ Checkout source code
@@ -28,23 +25,29 @@ jobs:
       - name: 🛠 Build with Gradle (no tests)
         run: ./gradlew clean build -x test
 
-      - name: 🔐 Decode SSH private key
-        run: echo "${{ secrets.KEY }}" | base64 -d > private_key.pem
-
-      - name: 🔑 Set SSH permissions
-        run: chmod 600 private_key.pem
-
-      - name: 📦 Upload jar to EC2
+      - name: 📦 Package deploy bundle
         run: |
-          scp -i private_key.pem -o StrictHostKeyChecking=no \
-            build/libs/*.jar \
-            ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/${{ secrets.USERNAME }}/app.jar
+          mkdir -p deploy
+          cp appspec.yml deploy/
+          cp -r scripts/ deploy/
+          cp build/libs/*SNAPSHOT.jar deploy/app.jar
+          cd deploy && zip -r app.zip .
 
-      - name: 🚀 Restart Spring Boot app on EC2
+      - name: ☁️ Upload to S3
         run: |
-          ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ secrets.HOST }} << EOF
-            echo "🔄 Stopping existing app process (if any)..."
-            pkill -f 'java.*app.jar' || true
-            echo "✅ Starting new Spring Boot app..."
-            nohup java -Djasypt.encryptor.password=${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }} -jar /home/${{ secrets.USERNAME }}/app.jar > app.log 2>&1 &
-          EOF
+          aws s3 cp deploy/app.zip s3://secretary-deploy-bucket/app.zip
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ap-northeast-2
+
+      - name: 🚀 Deploy with CodeDeploy
+        run: |
+          aws deploy create-deployment \
+            --application-name secretary-deploy-app \
+            --deployment-group-name secretary-deploy-group \
+            --s3-location bucket=secretary-deploy-bucket,bundleType=zip,key=app.zip \
+            --region ap-northeast-2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
