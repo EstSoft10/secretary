@@ -18,6 +18,7 @@ import est.secretary.dto.subtitle.SubtitleResponse;
 import est.secretary.dto.subtitle.SubtitleWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @Service
@@ -42,7 +43,7 @@ public class YoutubeSummaryService {
 			return response.getBody().getChapters();
 
 		} catch (HttpStatusCodeException e) {
-			System.out.println("서버 오류 응답: " + e.getResponseBodyAsString());
+			log.info("서버 오류 응답: {}", e.getResponseBodyAsString());
 			throw new RuntimeException("자막 추출 실패: " + e.getStatusCode());
 		}
 	}
@@ -58,8 +59,14 @@ public class YoutubeSummaryService {
 			.uri("/api/v1/summary-youtube")
 			.bodyValue(wrapper)
 			.retrieve()
+			.onStatus(status -> status.isError(), res -> {
+				return res.bodyToMono(String.class)
+					.flatMap(errorBody -> {
+						log.error("요약 API 오류 응답: {}", errorBody);
+						return Mono.<Throwable>error(new RuntimeException("요약 실패: " + errorBody));
+					});
+			})
 			.bodyToMono(String.class)
 			.block();
 	}
-
 }
