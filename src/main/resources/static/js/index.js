@@ -57,23 +57,32 @@ navigator.geolocation.getCurrentPosition(
 
 
 document.addEventListener("DOMContentLoaded", function () {
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+
     document.getElementById("youtubeForm").addEventListener("submit", async function (e) {
         e.preventDefault();
+
         const youtubeUrl = document.getElementById("youtubeInput").value;
         document.getElementById("loadingOverlay").style.display = "block";
+
         try {
             const response = await fetch("/youtube/extract-and-summary", {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
+                headers: {
+                    "Content-Type": "application/json",
+                    [csrfHeader]: csrfToken
+                },
                 body: JSON.stringify({url: youtubeUrl})
             });
+
             const data = await response.json();
-            const {summary, subtitle} = data;
             sessionStorage.setItem("youtubeSummaryResult", JSON.stringify({
-                summary,
-                subtitle,
+                summary: data.summary,
+                subtitle: data.subtitle,
                 videoUrl: youtubeUrl
             }));
+
             window.location.href = "/youtube-summary";
         } catch (err) {
             alert("요약 중 오류 발생");
@@ -82,6 +91,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+
 
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll('.card.small-card').forEach(card => {

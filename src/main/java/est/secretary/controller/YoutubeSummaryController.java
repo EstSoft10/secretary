@@ -28,7 +28,6 @@ public class YoutubeSummaryController {
 		try {
 			String url = request.get("url");
 			log.info("유튜브 자막 추출 + 요약 요청: {}", url);
-
 			List<SubtitleChapter> subtitles = youtubeSummaryService.extractSubtitles(url);
 			SubtitleWrapper wrapper = new SubtitleWrapper(subtitles);
 			String summary = youtubeSummaryService.summarizeSubtitles(wrapper);
