@@ -1,0 +1,56 @@
+name: CI/CD - Release Branch Deploy with CodeDeploy
+
+on:
+  push:
+    branches:
+      - release
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      JASYPT_ENCRYPTOR_PASSWORD: ${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }}
+
+    steps:
+      - name: ✅ Checkout source code v3
+        uses: actions/checkout@v4
+
+      - name: ☕ Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: 🔓 Grant execute permission to gradlew
+        run: chmod +x ./gradlew
+
+      - name: 🛠 Build with Gradle (no tests)
+        run: ./gradlew clean build -x test
+
+      - name: 📦 Package deploy bundle
+        run: |
+          mkdir -p deploy
+          cp appspec.yml deploy/
+          cp -r scripts/ deploy/
+          cp build/libs/*SNAPSHOT.jar deploy/app.jar
+          cd deploy && zip -r app.zip .
+
+      - name: ☁️ Upload to S3
+        run: |
+          aws s3 cp deploy/app.zip s3://secretary-deploy-bucket/app.zip
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ap-northeast-2
+
+      - name: 🚀 Deploy with CodeDeploy
+        run: |
+          aws deploy create-deployment \
+            --application-name secretary-deploy-app \
+            --deployment-group-name secretary-deploy-group \
+            --s3-location bucket=secretary-deploy-bucket,bundleType=zip,key=app.zip \
+            --region ap-northeast-2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
