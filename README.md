@@ -116,7 +116,7 @@
 
 ## 📋 기능 명세서
 
-![기능명세.PNG](attachment:1be1bb27-5363-4e73-ad80-af7ccec38c0f:기능명세.png)
+<img width="754" alt="기능명세 PNG" src="https://github.com/user-attachments/assets/38fdfeba-dd2d-43ad-8595-b579a65a0fec" />
 
 ---
 
