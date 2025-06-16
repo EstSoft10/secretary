@@ -1,4 +1,4 @@
-name: CodeDeploy를 사용한 Release 브랜치 CI/CD
+name: CI/CD - Release Branch Deploy with CodeDeploy
 
 on:
   push:
@@ -25,12 +25,12 @@ jobs:
       - name: 테스트 제외 빌드
         run: ./gradlew clean build -x test
 
-      - name: 빌드 결과 파일
+      - name: 빌드 결과 파일 생성
         run: |
           mkdir -p deploy
           cp appspec.yml deploy/
           cp -r scripts/ deploy/
-          cp build/libs/*.jar deploy/
+          cp build/libs/*SNAPSHOT.jar deploy/app.jar
           cd deploy && zip -r app.zip .
 
       - name: S3 업로드
