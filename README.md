@@ -97,7 +97,8 @@
 
 서비스 전반 구성 요소 및 요청 흐름을 시각화한 다이어그램입니다.
 
-![final drawio](https://github.com/user-attachments/assets/82c6df28-7ad8-4b11-ba92-d33432c48654)
+![아키텍쳐](https://github.com/user-attachments/assets/28869935-8fc9-4f8a-a9b2-a5088932a51d)
+
 
 ## 📁 프로젝트 구조
 
