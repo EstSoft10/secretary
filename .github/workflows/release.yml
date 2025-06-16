@@ -1,4 +1,4 @@
-name: CI/CD - Release Branch Deploy with CodeDeploy
+name: CodeDeploy를 활용한 Release 브랜치 CI/CD Workflows
 
 on:
   push:
@@ -10,22 +10,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: ✅ Checkout source code v3
+      - name: 소스 코드 확인
         uses: actions/checkout@v4
 
-      - name: ☕ Set up JDK 17
+      - name: JDK 17 버전 셋업
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: 🔓 Grant execute permission to gradlew
+      - name: 권한부여
         run: chmod +x ./gradlew
 
-      - name: 🛠 Build with Gradle (no tests)
+      - name: 테스트 제외 빌드
         run: ./gradlew clean build -x test
 
-      - name: 📦 Package deploy bundle
+      - name: 빌드 결과 파일 생성
         run: |
           mkdir -p deploy
           cp appspec.yml deploy/
@@ -33,7 +33,7 @@ jobs:
           cp build/libs/*SNAPSHOT.jar deploy/app.jar
           cd deploy && zip -r app.zip .
 
-      - name: ☁️ Upload to S3
+      - name: S3 업로드
         run: |
           aws s3 cp deploy/app.zip s3://secretary-deploy-bucket/app.zip
         env:
@@ -41,7 +41,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ap-northeast-2
 
-      - name: 🚀 Deploy with CodeDeploy
+      - name: CodeDeploy로 배포
         run: |
           aws deploy create-deployment \
             --application-name secretary-deploy-app \
