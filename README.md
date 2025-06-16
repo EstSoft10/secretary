@@ -175,7 +175,6 @@
 + - **Nginx (Reverse Proxy)**: 클라이언트의 HTTPS 요청을 수신하고, 도메인 경로에 따라 Spring Boot(8080) 또는 FastAPI(8000)로 프록시 분기
 + - **SSL 인증서 (Let's Encrypt)**: Certbot으로 자동 발급/갱신, 443 포트 HTTPS 암호화 제공
 - **S3 + CodeDeploy**: GitHub Actions에서 빌드 후 S3 업로드 → EC2 배포
-- **Certbot + HTTPS**: Nginx + Let’s Encrypt 인증서 적용 (443 포트)
 - **Jasypt 암호화**: 민감 정보는 Jasypt로 암호화, EC2에서는 SSM Parameter Store로 복호화
 + - **Spring Boot → FastAPI 통신**: 유튜브 자막 요약 기능 수행 시 내부 FastAPI 서버에 요청
 + - **FastAPI → 외부 API 호출**: yt-dlp를 통해 자막 추출 기능 수행 후 Alan API 요약 결과 호출
