@@ -1,4 +1,4 @@
-name: CI/CD - Release Branch Deploy with CodeDeploy
+name: CodeDeploy를 활용한 Release 브랜치 CI/CD Workflows
 
 on:
   push:
