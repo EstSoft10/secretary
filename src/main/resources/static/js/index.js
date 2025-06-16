@@ -165,4 +165,96 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
+let recognition = null;
+let isRecording = false;
 
+function toggleVoiceRecording() {
+    const btn = document.getElementById("voiceActionBtn");
+    const status = document.getElementById("voiceStatus");
+    const response = document.getElementById("voiceResponse");
+
+    if (!recognition) {
+        recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = "ko-KR";
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onresult = async (event) => {
+            const text = event.results[0][0].transcript;
+            console.log("🎧 입력:", text);
+
+            try {
+                const csrfHeader = document.querySelector("meta[name='_csrf_header']").content;
+                const csrfToken = document.querySelector("meta[name='_csrf']").content;
+
+                const res = await fetch("/api/voice/analyze", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        [csrfHeader]: csrfToken
+                    },
+                    body: JSON.stringify({query: text})
+                });
+
+                const data = await res.json();
+                document.getElementById("voiceResponse").textContent = data.message;
+
+            } catch (err) {
+                response.textContent = "❌ 오류 발생: " + err.message;
+            }
+
+            btn.textContent = "말하기 다시 시작";
+            btn.disabled = false;
+            isRecording = false;
+        };
+
+        recognition.onerror = (e) => {
+            response.textContent = "❌ 오류: " + e.error;
+            btn.textContent = "다시 시도하기";
+            btn.disabled = false;
+            isRecording = false;
+        };
+
+        recognition.onend = () => {
+            isRecording = false;
+            btn.disabled = false;
+            btn.textContent = "말하기 다시 시작";
+        };
+    }
+
+    if (isRecording) {
+        recognition.stop();
+        isRecording = false;
+        btn.textContent = "말하기 다시 시작";
+        status.textContent = "🎤 멈췄습니다.";
+        return;
+    }
+
+    // 시작
+    isRecording = true;
+    btn.disabled = true;
+    btn.innerHTML = `<span class="recording-dot"></span> 듣는 중...`;
+    status.textContent = "🎤 음성 인식 중입니다...";
+    recognition.start();
+}
+
+
+function closeVoiceModal() {
+    if (recognition && isRecording) {
+        recognition.stop();
+    }
+    isRecording = false;
+    document.getElementById("voiceModal").classList.add("hidden");
+    document.getElementById("voiceResponse").textContent = "";
+    document.getElementById("voiceStatus").textContent = "🎤 음성으로 일정을 관리해보세요!";
+}
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    const voiceBtn = document.getElementById("voice-assistant-btn");
+    const modal = document.getElementById("voiceModal");
+
+    voiceBtn.addEventListener("click", () => {
+        modal.classList.remove("hidden");
+    });
+});

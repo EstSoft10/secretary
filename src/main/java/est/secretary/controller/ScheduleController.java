@@ -3,6 +3,7 @@ package est.secretary.controller;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -20,9 +21,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import est.secretary.domain.CustomOAuth2User;
 import est.secretary.domain.Member;
+import est.secretary.dto.GeminiParseResult;
 import est.secretary.dto.ScheduleCountResponse;
 import est.secretary.dto.ScheduleRequest;
 import est.secretary.dto.ScheduleResponse;
+import est.secretary.dto.VoiceScheduleRequest;
 import est.secretary.repository.MemberRepository;
 import est.secretary.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
@@ -108,6 +111,31 @@ public class ScheduleController {
 		@PathVariable Long id) {
 		Member member = getMemberFromPrincipal(principal);
 		return scheduleService.getScheduleById(id, member);
+	}
+
+	@PostMapping("/gemini")
+	public ResponseEntity<?> handleVoiceByGemini(
+		@AuthenticationPrincipal CustomOAuth2User principal,
+		@RequestBody VoiceScheduleRequest request
+	) {
+		Member member = getMemberFromPrincipal(principal);
+		GeminiParseResult parsed = scheduleService.parseWithGemini(request.getQuery());
+
+		if (!parsed.isComplete()) {
+			return ResponseEntity.ok(Map.of(
+				"status", "incomplete",
+				"message", parsed.getMissingMessage()
+			));
+		}
+
+		scheduleService.createFromParsed(parsed, member);
+
+		return ResponseEntity.ok(Map.of(
+			"status", "success",
+			"title", parsed.getTitle(),
+			"start", parsed.getStart().toString(),
+			"location", parsed.getLocation()
+		));
 	}
 
 }

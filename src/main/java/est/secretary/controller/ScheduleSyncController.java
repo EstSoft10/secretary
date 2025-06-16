@@ -30,6 +30,9 @@ public class ScheduleSyncController {
 	@ResponseBody
 	public String exportToEmail(@RequestParam("email") String email,
 		@AuthenticationPrincipal CustomOAuth2User user) {
+		if (!scheduleService.hasSchedules(user.getMember())) {
+			return "empty";
+		}
 		scheduleService.exportToIcsAndSendMail(email, user.getMember());
 		return "ok";
 	}

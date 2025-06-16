@@ -339,3 +339,133 @@ body {
     font-weight: bold;
     color: #333;
 }
+
+/* 🎤 버튼 */
+.btn-voice {
+    margin-left: auto;
+    background: linear-gradient(to right, #6a11cb, #2575fc); /* 보라 → 하늘 */
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(106, 17, 203, 0.3);
+    position: relative;
+}
+
+.btn-voice:hover {
+    background: linear-gradient(to right, #5a0ec8, #1a6ef8);
+    transform: translateY(-1px);
+}
+
+
+/* 전체 배경 어둡게 */
+.voice-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5); /* 배경 흐리기 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+/* 말풍선 콘텐츠 */
+.voice-modal-content {
+    position: relative;
+    background-color: #fff;
+    border-radius: 16px;
+    padding: 24px 32px;
+    width: 320px;
+    text-align: center;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    animation: fadeInUp 0.3s ease-out;
+}
+
+.voice-modal.hidden {
+    display: none;
+}
+
+/* 버튼 */
+.btn-record {
+    background-color: #4e73df;
+    color: white;
+    padding: 10px 18px;
+    font-size: 14px;
+    border: none;
+    border-radius: 8px;
+    margin-top: 12px;
+    cursor: pointer;
+}
+
+.btn-cancel {
+    background-color: #e2e6ea;
+    color: #333;
+    padding: 8px 14px;
+    font-size: 13px;
+    border: none;
+    border-radius: 6px;
+    margin-top: 10px;
+    margin-left: 6px;
+    cursor: pointer;
+}
+
+/* 부드러운 애니메이션 */
+@keyframes fadeInUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.btn-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #999;
+    cursor: pointer;
+}
+
+.ai-response {
+    margin-top: 12px;
+    font-size: 14px;
+    color: #333;
+    white-space: pre-line;
+    text-align: left;
+}
+
+.recording-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-right: 8px;
+    background: #ff2c2c;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #ff2c2c66;
+    animation: recording-blink 1s infinite;
+    vertical-align: middle;
+}
+
+@keyframes recording-blink {
+    0%, 100% {
+        opacity: 1;
+        box-shadow: 0 0 8px #ff2c2c66;
+    }
+    50% {
+        opacity: 0.4;
+        box-shadow: 0 0 18px #ff2c2cbb;
+    }
+}

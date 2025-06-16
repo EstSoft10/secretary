@@ -61,4 +61,16 @@ public class Schedule {
 		this.location = location;
 	}
 
+	public void update(String newTitle, LocalDateTime newStart, String newLocation) {
+		if (newTitle != null) {
+			this.title = newTitle;
+		}
+		if (newStart != null) {
+			this.start = newStart;
+		}
+		if (newLocation != null) {
+			this.location = newLocation;
+		}
+	}
+
 }

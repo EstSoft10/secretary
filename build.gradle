@@ -40,6 +40,7 @@ dependencies {
     implementation 'net.sf.biweekly:biweekly:0.6.6'
     implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'org.json:json:20231013'
     testImplementation 'org.springframework.security:spring-security-test'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'

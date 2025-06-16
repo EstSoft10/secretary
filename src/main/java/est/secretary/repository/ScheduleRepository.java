@@ -27,4 +27,16 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
 	Optional<Schedule> findByScheduleIdAndMember(Long scheduleId, Member member);
 
+	List<Schedule> findByMemberId(Long memberId);
+
+	List<Schedule> findAllByMemberAndTitleAndStartBetween(Member member, String title, LocalDateTime start,
+		LocalDateTime end);
+
+	List<Schedule> findAllByMemberAndTitleAndStart(Member member, String title, LocalDateTime start);
+
+	List<Schedule> findAllByMemberAndStartBetween(Member member, LocalDateTime start, LocalDateTime end);
+
+	List<Schedule> findAllByMemberAndTitleContainingAndStartBetween(Member member, String title, LocalDateTime start,
+		LocalDateTime end);
 }
+

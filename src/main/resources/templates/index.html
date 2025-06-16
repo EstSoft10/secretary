@@ -17,6 +17,7 @@
             <div class="user-info-row">
                 <img th:src="${profileImage}" alt="프로필 이미지" class="profile-thumb">
                 <p><strong th:text="${userName + '님의 일주일 간 일정'}" class="title-calendar"></strong></p>
+                <button id="voice-assistant-btn" class="btn-voice">A:ssistant 호출</button>
             </div>
             <div class="week-grid">
                 <div class="day-cell" th:each="day : ${weekSchedules}" th:onclick="|location.href='/calendar'|">
@@ -39,12 +40,6 @@
                 </div>
             </div>
         </section>
-
-        <!--        <section class="memo-pad">-->
-        <!--            <textarea placeholder="오늘의 메모를 적어보세요..." class="memo-textarea"></textarea>-->
-        <!--            <button class="memo-edit-btn" title="수정">✏️</button>-->
-        <!--        </section>-->
-
         <section class="search-box">
             <form class="search-form" th:action="@{/api/search}" method="get">
                 <input type="text" name="query" placeholder="앨런에게 물어보세요!" required/>
@@ -94,6 +89,17 @@
     </div>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <meta name="_csrf" th:content="${_csrf.token}"/>
+    <!-- 음성 모달 -->
+    <div id="voiceModal" class="voice-modal hidden">
+        <div class="voice-modal-content">
+            <button class="btn-close" onclick="closeVoiceModal()">✕</button>
+            <p id="voiceStatus">🎤 음성으로 일정을 관리해보세요!</p>
+            <button onclick="toggleVoiceRecording()" id="voiceActionBtn" class="btn-record">말하기 시작</button>
+            <div id="voiceResponse" class="ai-response"></div>
+        </div>
+    </div>
+
+
 </main>
 <div th:replace="~{layout/footer :: footer}"></div>
 </body>

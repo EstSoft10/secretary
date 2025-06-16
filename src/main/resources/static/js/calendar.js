@@ -259,6 +259,9 @@ document.getElementById('export-form').addEventListener('submit', function (e) {
             if (result === 'ok') {
                 alert('메일 전송 요청 완료! 메일함을 확인하세요.');
                 closeExportModal();
+            } else if (result === 'empty') {
+                alert('서비스에 등록된 일정이 없습니다.');
+                closeExportModal();
             } else {
                 alert('메일 전송 중 문제가 발생했습니다.');
             }
@@ -352,7 +355,7 @@ function suggestAIQuestions(scheduleData) {
                 }, 500);
             }, i * 300);
         });
-    }, 5000);
+    }, 10000);
 
 }
 
