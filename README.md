@@ -11,13 +11,14 @@
 1. [프로젝트 소개](#-프로젝트-소개)  
 2. [서비스 특징](#-서비스-특징)  
 3. [주요 기능](#-주요-기능)  
-4. [기술 스택](#-기술-스택)  
-5. [프로젝트 구조](#-프로젝트-구조)  
-6. [테이블 리스트](#-테이블-리스트)  
-7. [기능 명세서](#-기능-명세서)   
-8. [API 명세서](#-api-명세서)  
-9. [배포 및 CI/CD](#-배포-및-ci-cd)  
-10. [암호화 설정](#-암호화-설정)  
+4. [기술 스택](#-기술-스택)
+5. [시스템 아키텍처](#-시스템-아키텍처)
+6. [프로젝트 구조](#-프로젝트-구조)  
+7. [테이블 리스트](#-테이블-리스트)  
+8. [기능 명세서](#-기능-명세서)   
+9. [API 명세서](#-api-명세서)  
+10. [배포 및 CI/CD](#-배포-및-ci-cd)  
+11. [암호화 설정](#-암호화-설정)  
 
 </details>
 
@@ -88,6 +89,12 @@
   
 
 ---
+
+## 🏗 시스템 아키텍처
+
+서비스 전반 구성 요소 및 요청 흐름을 시각화한 다이어그램입니다.
+
+![final drawio](https://github.com/user-attachments/assets/82c6df28-7ad8-4b11-ba92-d33432c48654)
 
 ## 📁 프로젝트 구조
 
@@ -163,12 +170,15 @@
 ## 🚀 배포 및 CI/CD
 
 ### ▶ 배포 구성
-
 - **EC2**: Spring Boot 애플리케이션 `.jar` 실행
-- **FastAPI 서버**: Python 기반 Uvicorn 서버 (별도 포트)
+- **FastAPI 서버**: Python 기반 Uvicorn 서버 (8000 포트)
++ - **Nginx (Reverse Proxy)**: 클라이언트의 HTTPS 요청을 수신하고, 도메인 경로에 따라 Spring Boot(8080) 또는 FastAPI(8000)로 프록시 분기
++ - **SSL 인증서 (Let's Encrypt)**: Certbot으로 자동 발급/갱신, 443 포트 HTTPS 암호화 제공
 - **S3 + CodeDeploy**: GitHub Actions에서 빌드 후 S3 업로드 → EC2 배포
 - **Certbot + HTTPS**: Nginx + Let’s Encrypt 인증서 적용 (443 포트)
 - **Jasypt 암호화**: 민감 정보는 Jasypt로 암호화, EC2에서는 SSM Parameter Store로 복호화
++ - **Spring Boot → FastAPI 통신**: 유튜브 자막 요약 기능 수행 시 내부 FastAPI 서버에 요청
++ - **FastAPI → 외부 API 호출**: yt-dlp를 통해 자막 추출 기능 수행 후 Alan API 요약 결과 호출
 
 ### ▶ GitHub Actions
 
@@ -176,7 +186,8 @@
   - 전체 Gradle 빌드 수행
   - `.jar` 및 설정 파일을 S3에 업로드
   - CodeDeploy 트리거 → EC2 배포 후 `start.sh` 실행
-- GitHub Secrets로 환경변수 관리 (`JASYPT_ENCRYPTOR_PASSWORD` 등)
+- AWS SSM Parameter Store에서 Jasypt 복호화 키(JASYPT_ENCRYPTOR_PASSWORD) 로드
+- GitHub Secrets에는 별도 CI 환경변수만 관리
 
 ---
 
@@ -190,7 +201,7 @@
   ```
 - 복호화:
   - EC2 서버 환경변수로 `JASYPT_ENCRYPTOR_PASSWORD` 설정
-  - 또는 `-Djasypt.encryptor.password` 로 실행 시 주입
-- EC2 자동 배포 시 `appspec.yml` + `start.sh` 내 환경변수로 주입 처리
+  - 복호화 키는 AWS SSM Parameter Store에 저장
+- EC2 배포 시 start.sh 에서 JASYPT_ENCRYPTOR_PASSWORD 환경변수로 주입
 
 ---
