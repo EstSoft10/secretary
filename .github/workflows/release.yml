@@ -9,6 +9,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env:
+      JASYPT_ENCRYPTOR_PASSWORD: ${{ secrets.JASYPT_ENCRYPTOR_PASSWORD }}
+
     steps:
       - name: 소스 코드 확인
         uses: actions/checkout@v4
@@ -30,7 +33,7 @@ jobs:
           mkdir -p deploy
           cp appspec.yml deploy/
           cp -r scripts/ deploy/
-          cp build/libs/*SNAPSHOT.jar deploy/app.jar
+          cp build/libs/*.jar deploy/
           cd deploy && zip -r app.zip .
 
       - name: S3 업로드
