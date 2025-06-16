@@ -258,3 +258,168 @@ document.addEventListener("DOMContentLoaded", () => {
         modal.classList.remove("hidden");
     });
 });
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const chatbotBtn = document.getElementById('ai-chatbot-btn');
+    const chatPopup = document.getElementById('chat-popup');
+    const closeChatBtn = document.getElementById('close-chat-btn');
+    const chatBody = document.getElementById('chat-body');
+    const chatInput = document.getElementById('chat-input');
+    const sendChatBtn = document.getElementById('send-chat-btn');
+    const suggestionContainer = document.getElementById('chat-suggestion-container');
+
+    const csrfToken = document.querySelector("meta[name='_csrf']")?.getAttribute("content");
+    const csrfHeader = document.querySelector("meta[name='_csrf_header']")?.getAttribute("content");
+    const currentUserId = document.querySelector("meta[name='user_id']")?.getAttribute("content");
+    let conversationHistory = [];
+
+    chatbotBtn.addEventListener('click', () => toggleChat(true));
+    closeChatBtn.addEventListener('click', () => {
+        toggleChat(false);
+        conversationHistory = [];
+    });
+    sendChatBtn.addEventListener('click', () => handleUserInput());
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleUserInput();
+    });
+
+    fetchAndDisplaySuggestion();
+
+    async function fetchAndDisplaySuggestion() {
+        if (!currentUserId) {
+            console.error("사용자 ID를 찾을 수 없어 추천 기능을 실행할 수 없습니다.");
+            return;
+        }
+        const today = new Date().toISOString().slice(0, 10);
+        const cacheKey = `aiSuggestions_${currentUserId}_${today}`;
+        const FIVE_MINUTES_IN_MS = 5 * 60 * 1000;
+        try {
+            const cachedItem = localStorage.getItem(cacheKey);
+            if (cachedItem) {
+                const cachedWrapper = JSON.parse(cachedItem);
+                if (cachedWrapper.expiresAt < Date.now()) {
+                    localStorage.removeItem(cacheKey);
+                } else {
+                    const suggestions = cachedWrapper.data;
+                    if (suggestions && suggestions.length > 0) {
+                        suggestions.forEach(suggestionObj => createSuggestionBubble(suggestionObj));
+                    }
+                    return;
+                }
+            }
+        } catch (e) {
+            localStorage.removeItem(cacheKey);
+        }
+        try {
+            const response = await fetch('/api/ai/suggestion');
+            if (!response.ok) return;
+            const data = await response.json();
+            const suggestions = data.suggestions;
+            if (suggestions && Array.isArray(suggestions) && suggestions.length > 0) {
+                const expiresAt = Date.now() + FIVE_MINUTES_IN_MS;
+                const cacheWrapper = {data: suggestions, expiresAt: expiresAt};
+                localStorage.setItem(cacheKey, JSON.stringify(cacheWrapper));
+                suggestions.forEach(suggestionObj => createSuggestionBubble(suggestionObj));
+            }
+        } catch (error) {
+            console.error('AI 추천 기능 실행 중 오류:', error);
+        }
+    }
+
+    function createSuggestionBubble(suggestion) {
+        const bubble = document.createElement('div');
+        bubble.className = 'chat-suggestion-bubble';
+        bubble.textContent = suggestion.displayText;
+        suggestionContainer.appendChild(bubble);
+        suggestionContainer.classList.remove('hidden');
+        bubble.addEventListener('click', () => {
+            conversationHistory = [];
+            handleGenericAction(suggestion.displayText, suggestion.actionQuery);
+        });
+    }
+
+    function handleUserInput() {
+        const userQuery = chatInput.value;
+        if (!userQuery.trim()) return;
+        handleGenericAction(null, userQuery);
+    }
+
+    async function handleGenericAction(displayTextForAI, queryToServer) {
+        toggleChat(true);
+
+        if (displayTextForAI) {
+            addMessageToChat('ai', displayTextForAI);
+        } else {
+            addMessageToChat('user', queryToServer);
+        }
+
+        chatInput.value = '';
+        const spinnerId = 'spinner-' + Date.now();
+        addMessageToChat('ai-loading', '', spinnerId);
+
+        try {
+            const headers = {'Content-Type': 'application/json'};
+            if (csrfToken && csrfHeader) headers[csrfHeader] = csrfToken;
+
+            const response = await fetch('/api/ai/action', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({
+                    actionQuery: queryToServer,
+                    history: conversationHistory
+                })
+            });
+
+            if (!response.ok) throw new Error(`서버 응답 오류: ${response.status}`);
+
+            const result = await response.json();
+            const aiResponse = result.message;
+            updateMessage(spinnerId, 'ai', aiResponse);
+
+            conversationHistory.push({role: 'user', content: queryToServer});
+            conversationHistory.push({role: 'model', content: aiResponse});
+
+        } catch (error) {
+            console.error('AI 액션 처리 오류:', error);
+            updateMessage(spinnerId, 'ai', '죄송합니다. 요청을 처리하는 중 오류가 발생했어요.');
+        }
+    }
+
+    function toggleChat(show) {
+        if (show) {
+            chatPopup.classList.remove('hidden');
+            if (suggestionContainer) {
+                suggestionContainer.style.display = 'none';
+            }
+        } else {
+            chatPopup.classList.add('hidden');
+        }
+    }
+
+    function addMessageToChat(sender, message, id) {
+        const messageDiv = document.createElement('div');
+        if (id) messageDiv.id = id;
+
+        if (sender === 'ai-loading') {
+            messageDiv.className = 'ai-message spinner-bubble';
+            messageDiv.innerHTML = '<div class="spinner-circle"></div><span>잠시만 기다려주세요...</span>';
+        } else {
+            messageDiv.className = sender === 'user' ? 'user-message' : 'ai-message';
+            messageDiv.textContent = message;
+        }
+
+        const chatBody = document.getElementById('chat-body');
+        chatBody.appendChild(messageDiv);
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    function updateMessage(id, sender, message) {
+        const messageDiv = document.getElementById(id);
+        if (messageDiv) {
+            messageDiv.className = sender === 'user' ? 'user-message' : 'ai-message';
+            messageDiv.innerHTML = '';
+            messageDiv.textContent = message;
+        }
+    }
+});

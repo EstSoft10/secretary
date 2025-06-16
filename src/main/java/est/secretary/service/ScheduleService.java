@@ -381,4 +381,17 @@ public class ScheduleService {
 		scheduleRepository.save(schedule);
 	}
 
+	public List<Schedule> findSchedulesForToday(Member member) {
+		LocalDateTime startOfDay = LocalDate.now().atStartOfDay(); // 오늘 00:00:00
+		LocalDateTime endOfDay = LocalDate.now().atTime(LocalTime.MAX); // 오늘 23:59:59
+		return scheduleRepository.findByMemberAndStartBetween(member, startOfDay, endOfDay);
+	}
+
+	public List<Schedule> findSchedulesForTodayAndTomorrow(Member member) {
+		LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
+		LocalDateTime endOfTomorrow = LocalDate.now().plusDays(1).atTime(LocalTime.MAX);
+
+		return scheduleRepository.findByMemberAndStartBetween(member, startOfToday, endOfTomorrow);
+	}
+
 }

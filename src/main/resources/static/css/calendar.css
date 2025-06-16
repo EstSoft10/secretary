@@ -385,73 +385,36 @@ textarea {
     z-index: 999;
 }
 
-.chat-suggestion-bubble {
-    background-color: #e8f0fe;
-    padding: 10px 15px;
+.chat-suggestion-bubble-calendar {
+    background: #e8f0fe;
+    color: #222;
+    padding: 12px 18px;
     border-radius: 18px;
-    font-size: 14px;
-    max-width: 300px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    font-size: 15px;
+    font-weight: 500;
+    max-width: 320px;
+    box-shadow: 0 4px 16px rgba(80, 120, 180, 0.11);
     cursor: pointer;
     position: relative;
-    opacity: 0;
-    transform: translateY(10px);
-    animation: fadeInUp 1s ease-out forwards;
+    margin-bottom: 8px;
+    opacity: 1;
+    transition: box-shadow 0.2s, background 0.2s;
+    animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.chat-suggestion-bubble {
-    background-color: #e8f0fe;
-    padding: 10px 15px;
-    border-radius: 18px;
-    font-size: 14px;
-    max-width: 300px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    cursor: pointer;
-    position: relative;
-    opacity: 0;
-    transform: translateY(10px);
-    animation: fadeInUp 1s ease-out forwards;
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.chat-suggestion-bubble {
-    transition: opacity 0.5s ease, transform 0.5s ease;
+.chat-suggestion-bubble-calendar:hover {
+    background: #d2e4fc;
+    box-shadow: 0 8px 28px rgba(80, 120, 180, 0.18);
 }
 
 
-.chat-suggestion-bubble::after {
+.chat-suggestion-bubble-calendar::after {
     content: "💬";
     position: absolute;
     right: -15px;
     top: 5%;
     transform: translateY(-50%);
     font-size: 18px;
-}
-
-.chat-suggestion-bubble:hover {
-    transform: scale(1.05);
-    background-color: #e2e6ea;
 }
 
 .chat-input-wrapper {
@@ -497,7 +460,7 @@ textarea {
 
 .user-message {
     align-self: flex-end;
-    background-color: #d6f3ff;
+    background-color: #007bff;
     border-bottom-right-radius: 0;
 }
 

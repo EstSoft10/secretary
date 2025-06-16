@@ -330,7 +330,7 @@ function suggestAIQuestions(scheduleData) {
 
     suggestionPairs.slice(0, 3).forEach(({display, query}, index) => {
         const bubble = document.createElement('div');
-        bubble.className = 'chat-suggestion-bubble';
+        bubble.className = 'chat-suggestion-bubble-calendar';
         bubble.style.animationDelay = `${index * 0.3}s`;
         bubble.innerText = display;
         bubble.dataset.query = query;

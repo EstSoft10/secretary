@@ -89,7 +89,9 @@
     </div>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <meta name="_csrf" th:content="${_csrf.token}"/>
-    <!-- 음성 모달 -->
+    <meta name="user_id" th:if="${#authentication.principal != null}"
+          th:content="${#authentication.principal.member.id}"/>
+
     <div id="voiceModal" class="voice-modal hidden">
         <div class="voice-modal-content">
             <button class="btn-close" onclick="closeVoiceModal()">✕</button>
@@ -99,7 +101,22 @@
         </div>
     </div>
 
+    <div id="chat-suggestion-container" class="chat-suggestion-container hidden"></div>
 
+    <div id="chat-popup" class="chat-popup hidden">
+        <div class="chat-header">
+            <span>AI 비서</span>
+            <button id="close-chat-btn" class="chat-close-btn">&times;</button>
+        </div>
+        <div class="chat-body" id="chat-body">
+        </div>
+        <div class="chat-input-wrapper">
+            <input type="text" id="chat-input" placeholder="여기에 메시지 입력...">
+            <button id="send-chat-btn">▶</button>
+        </div>
+    </div>
+
+    <button id="ai-chatbot-btn" class="chatbot-btn">+</button>
 </main>
 <div th:replace="~{layout/footer :: footer}"></div>
 </body>

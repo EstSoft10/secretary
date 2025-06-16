@@ -1,8 +1,11 @@
 package est.secretary.controller;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -51,7 +54,6 @@ public class VoiceAnalysisController {
 				boolean isYes =
 					userQuery.contains("예") || userQuery.contains("네") || userQuery.contains("응") || userQuery.contains(
 						"그래") || userQuery.contains("맞아");
-
 				boolean isNo = userQuery.contains("아니요") || userQuery.contains("아니");
 
 				if (isYes) {
@@ -131,6 +133,33 @@ public class VoiceAnalysisController {
 							Collections.singletonMap("message", "이해하지 못했어요. 제목, 시간, 장소 중 무엇을 바꿀지 말씀해주세요."));
 					}
 				}
+			} else if ("AWAITING_DELETE_SELECTION".equals(pendingAction)) {
+				@SuppressWarnings("unchecked")
+				List<Long> scheduleIds = (List<Long>)session.getAttribute("deletable_schedules_list");
+				int selectedIndex = -1;
+
+				Pattern pattern = Pattern.compile("(\\d+|첫|두|세|네|다섯) 번째|(\\d+)번");
+				Matcher matcher = pattern.matcher(userQuery.replaceAll("\\s", ""));
+
+				if (matcher.find()) {
+					String match = (matcher.group(1) != null) ? matcher.group(1) : matcher.group(2);
+					switch (match) {
+						case "첫", "1" -> selectedIndex = 0;
+						case "두", "2" -> selectedIndex = 1;
+						case "세", "3" -> selectedIndex = 2;
+						case "네", "4" -> selectedIndex = 3;
+						case "다섯", "5" -> selectedIndex = 4;
+					}
+				}
+
+				if (selectedIndex != -1 && scheduleIds != null && selectedIndex < scheduleIds.size()) {
+					Long scheduleIdToDelete = scheduleIds.get(selectedIndex);
+					scheduleService.deleteScheduleById(scheduleIdToDelete, member);
+					clearConversationSession(session);
+					return ResponseEntity.ok(Collections.singletonMap("message", "🗑️ 일정을 삭제했어요."));
+				} else {
+					return ResponseEntity.ok(Collections.singletonMap("message", "잘못된 선택이에요. 번호나 순서로 다시 말씀해주세요."));
+				}
 			}
 		}
 
@@ -141,37 +170,27 @@ public class VoiceAnalysisController {
 		String message;
 		switch (merged.getIntent()) {
 			case "create" -> {
-				boolean missingTitle = merged.getTitle() == null;
-				boolean missingTime = isStartMissingOrIncomplete(merged.getStart());
-				boolean missingLocation = merged.getLocation() == null;
-
-				if (merged.getStart() != null && merged.getStart().matches("^\\d{4}-\\d{2}-\\d{2}$")) {
+				if (merged.getTitle() == null) {
+					message = "무슨 일정인가요?";
 					session.setAttribute("voice-progress", merged);
-					return ResponseEntity.ok(Collections.singletonMap("message", "📆 날짜는 확인했어요! 몇 시에 진행할까요?"));
-				}
-				if (merged.getStart() != null && merged.getStart().matches("^T?\\d{2}:\\d{2}(:\\d{2})?$")) {
+				} else if (isStartMissingOrIncomplete(merged.getStart())) {
+					if (merged.getStart() != null && merged.getStart().matches("^\\d{4}-\\d{2}-\\d{2}$")) {
+						message = "📆 날짜는 확인했어요! 몇 시에 진행할까요?";
+					} else {
+						message = "언제 진행되는 일정인가요?";
+					}
 					session.setAttribute("voice-progress", merged);
-					return ResponseEntity.ok(Collections.singletonMap("message", "⏰ 시간은 확인했어요! 날짜도 알려주세요 🙏"));
-				}
-				if (missingTitle || missingTime || missingLocation) {
-					StringBuilder sb = new StringBuilder("📌 일정 등록을 위해 ");
-					if (missingTitle)
-						sb.append("제목을, ");
-					if (missingTime)
-						sb.append("시간을, ");
-					if (missingLocation)
-						sb.append("장소를, ");
-					sb.setLength(sb.length() - 2);
-					sb.append(" 알려주세요 🙏");
+				} else if (merged.getLocation() == null) {
+					message = "어디서 진행하는 일정인가요?";
 					session.setAttribute("voice-progress", merged);
-					return ResponseEntity.ok(Collections.singletonMap("message", sb.toString()));
+				} else {
+					scheduleService.saveScheduleByParsedResult(merged, member);
+					clearConversationSession(session);
+					message =
+						"✅ 일정 등록 완료!\n" + "제목: " + merged.getTitle() + "\n" + "시간: " + merged.getStart() + "\n" + "장소: "
+							+ merged.getLocation();
 				}
-
-				scheduleService.saveScheduleByParsedResult(merged, member);
-				clearConversationSession(session);
-				message =
-					"✅ 일정 등록 완료!\n" + "제목: " + merged.getTitle() + "\n" + "시간: " + merged.getStart() + "\n" + "장소: "
-						+ merged.getLocation();
+				return ResponseEntity.ok(Collections.singletonMap("message", message));
 			}
 
 			case "delete" -> {
@@ -188,11 +207,16 @@ public class VoiceAnalysisController {
 						session.setAttribute("target_schedule_id", scheduleToDelete.getScheduleId());
 						message = String.format("🗓️ '%s' 일정이 있습니다. 이 일정을 삭제할까요? (예/아니요)", scheduleToDelete.getTitle());
 					} else {
-						StringBuilder sb = new StringBuilder("어떤 일정을 삭제할까요? 유사한 일정이 여러 개 있어요.\n");
-						schedules.forEach(
-							s -> sb.append(String.format("- %s (%s)\n", s.getTitle(), s.getStart().toLocalTime())));
+						StringBuilder sb = new StringBuilder("어떤 일정을 삭제할까요? 번호나 순서로 말씀해주세요.\n");
+						List<Long> scheduleIds = new ArrayList<>();
+						for (int i = 0; i < schedules.size(); i++) {
+							Schedule s = schedules.get(i);
+							scheduleIds.add(s.getScheduleId());
+							sb.append(String.format("%d. %s (%s)\n", i + 1, s.getTitle(), s.getStart().toLocalTime()));
+						}
 						message = sb.toString();
-						session.setAttribute("voice-progress", merged);
+						session.setAttribute("pending_action", "AWAITING_DELETE_SELECTION");
+						session.setAttribute("deletable_schedules_list", scheduleIds);
 					}
 					return ResponseEntity.ok(Collections.singletonMap("message", message));
 				}
@@ -260,6 +284,7 @@ public class VoiceAnalysisController {
 		session.removeAttribute("target_field");
 		session.removeAttribute("question");
 		session.removeAttribute("voice-progress");
+		session.removeAttribute("deletable_schedules_list");
 	}
 
 	private VoiceAnalysisResult mergeAnalysisResults(VoiceAnalysisResult previous, VoiceAnalysisResult current) {

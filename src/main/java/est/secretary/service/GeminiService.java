@@ -29,6 +29,7 @@ public class GeminiService {
 	private String apiKey;
 
 	private final ObjectMapper objectMapper;
+	private final HttpClient client = HttpClient.newHttpClient();
 
 	public VoiceAnalysisResult analyze(String query) {
 		try {
@@ -52,7 +53,7 @@ public class GeminiService {
 				{
 				  "intent": "create | update | delete | read",
 				  "title": "일정 제목",
-				  "start": "YYYY-MM-DD'T'HH:mm:ss 또는 YYYY-MM-DD",
+				  "start": "YYYY-MM-DD'T'HH:mm:ss 또는 YYYY-MM-DD 또는 THH:mm:ss",
 				  "location": "장소"
 				}
 				
@@ -64,6 +65,10 @@ public class GeminiService {
 				[예시 2: 필드만 명시된 수정]
 				사용자 발화: "장소만 수정할래"
 				{ "intent": "update", "title": null, "start": null, "location": null }
+				
+				[예시 3: 시간만 명시]
+				사용자 발화: "오후 2시"
+				{ "intent": null, "title": null, "start": "T14:00:00", "location": null }
 				---
 				
 				실제 사용자 발화: "%s"
@@ -89,7 +94,6 @@ public class GeminiService {
 			HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
 			String responseBody = response.body();
-			log.debug("🧠 Gemini 응답 원문: {}", responseBody);
 
 			JsonNode textNode = objectMapper.readTree(responseBody)
 				.path("candidates")
@@ -102,8 +106,8 @@ public class GeminiService {
 			if (textNode.isMissingNode()) {
 				return new VoiceAnalysisResult();
 			}
-
 			String text = textNode.asText().trim();
+
 			text = text
 				.replaceAll("(?i)^\\s*json\\s*", "")
 				.replaceAll("(?s)```json", "")
@@ -114,12 +118,59 @@ public class GeminiService {
 			if (!text.startsWith("{") || !text.endsWith("}")) {
 				return new VoiceAnalysisResult();
 			}
-
 			VoiceAnalysisResult result = objectMapper.readValue(text, VoiceAnalysisResult.class);
 			return result;
 
 		} catch (Exception e) {
 			throw new RuntimeException("Gemini API 분석 실패", e);
+		}
+	}
+
+	public String generateText(String systemPrompt) {
+		try {
+			String endpoint =
+				"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key="
+					+ apiKey;
+
+			Map<String, Object> requestBody = Map.of(
+				"contents", List.of(
+					Map.of("parts", List.of(
+						Map.of("text", systemPrompt)
+					))
+				)
+			);
+
+			String jsonRequest = objectMapper.writeValueAsString(requestBody);
+
+			HttpRequest request = HttpRequest.newBuilder()
+				.uri(URI.create(endpoint))
+				.header("Content-Type", "application/json")
+				.POST(HttpRequest.BodyPublishers.ofString(jsonRequest, StandardCharsets.UTF_8))
+				.build();
+
+			HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+			String responseBody = response.body();
+
+			JsonNode textNode = objectMapper.readTree(responseBody)
+				.path("candidates")
+				.path(0)
+				.path("content")
+				.path("parts")
+				.path(0)
+				.path("text");
+
+			if (textNode.isMissingNode() || textNode.isNull()) {
+				JsonNode finishReason = objectMapper.readTree(responseBody)
+					.path("candidates").path(0).path("finishReason");
+				log.error("마무리 사유: {}", finishReason.asText("UNKNOWN"));
+				return null;
+			}
+
+			return textNode.asText().trim();
+
+		} catch (Exception e) {
+			log.error("Gemini 텍스트 생성 중 오류 발생", e);
+			return null;
 		}
 	}
 }
