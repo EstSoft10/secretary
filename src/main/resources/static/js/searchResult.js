@@ -89,7 +89,11 @@ function fetchConversation(conversationId) {
             });
 
             if (lastBubble) {
-                lastBubble.scrollIntoView({behavior: "smooth"});
+                window.scrollTo({
+                    top: document.body.scrollHeight,
+                    behavior: 'smooth'
+                });
+
             }
         })
         .catch(err => alert("대화 불러오기 오류: " + err));

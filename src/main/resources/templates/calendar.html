@@ -51,7 +51,7 @@
         <span class="close" onclick="closeExportModal()">&times;</span>
         <form id="export-form">
             <label for="email">받을 이메일 주소</label>
-            <input type="email" name="email" id="email" required placeholder="example@email.com">
+            <input type="email" name="email" id="email" th:value="${#authentication.principal.email}">
             <button type="submit" class="btn-common">전송</button>
             <div id="loading-message" class="hidden">
                 <div class="spinner"></div>
